@@ -1,4 +1,4 @@
-import Functions
+from . import Functions
 
 print('*Opa bem vindo a calculadora simples, se precisar de ajuda escreva isso na tela!*')
 
