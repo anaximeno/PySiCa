@@ -42,6 +42,7 @@ while True:
             - sair (p/ sair da calculadora)
             ''')
         elif ope == 'sair':
+            print('*Você Saiu da Calculadora!')
             break
         elif ope.isspace() is True or ope == '':
             print('Você deve escrever alguma coisa!')
