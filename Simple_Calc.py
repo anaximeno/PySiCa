@@ -8,8 +8,9 @@ if you don't know the commands type 'help'
 *
 """)
 
-t = False
+t = True
 
+# You can use also floating numbers on the calc.
 while True:
     op = input('Choose one operation -> ').lower()
     try:
