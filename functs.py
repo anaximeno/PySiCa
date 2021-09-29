@@ -145,7 +145,12 @@ class Div(BinaryOperation):
         self._space_between = False
 
     def eval(self, env=None):
-        return self.left.eval(env) / self.right.eval(env)
+        a = self.left.eval(env)
+        b = self.right.eval(env)
+        if b == 0:
+            print(f"Cannot Divide {a} by {b}")
+            exit(1)
+        return a / b
 
 
 def eval_expr(expr: str, vars_allowed: bool = False) -> Expr:
