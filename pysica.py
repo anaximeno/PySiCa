@@ -30,7 +30,7 @@ if __name__ == '__main__':
             os.system('clear')
             expr = eval_expr(input('> Your Expression >> '))
             print(f"\n{expr} = {expr.eval()}")
-        elif opt == 'b':
+        elif opt == 'b': ## TODO: Finish the program
             pass
         elif opt == 'q':
             pass
