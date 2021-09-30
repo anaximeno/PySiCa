@@ -5,18 +5,18 @@ import sys
 import os
 
 
-DebugMode = False
+DEBUG = False
 
 
-def clear():
+def clear(force_clear: bool = False):
     """Clear the Console"""
-    if not DebugMode:
+    if not DEBUG or force_clear is True:
         os.system('clear')
-    return not DebugMode
+    return not DEBUG or force_clear
 
 
-def enterpoint(*args, **kwargs):
-    pass
+def enterpoint(text: str = None):
+    sys.stdin.read(1)
 
 
 def animate(string: str, secs: float = 0.1):
@@ -32,10 +32,10 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('-D', '--debug', action='store_true')
     args = parser.parse_args()
-    DebugMode = args.debug
+    DEBUG = args.debug
 
     clear()
-    animate("\t\t Welcome to the Python Simple Calculator - PySiCa\n", 0.085 * int(not DebugMode))
+    animate("\t\t Welcome to the Python Simple Calculator - PySiCa\n", 0.085 * int(not DEBUG))
 
     while True:
         print("What do you want to do ?\n")
@@ -47,13 +47,20 @@ if __name__ == '__main__':
         if opt == 'a':
             clear()
             expr = eval_expr(input('> Your Expression >> '))
-            print(f"\n{expr} = {expr.eval()}")
-        elif opt == 'b': ## TODO: Finish the program
-            pass
+            print(f"\n = {expr.eval()}\n")
+            enterpoint()
+        elif opt == 'b':
+            clear()
+            print("Info: This option wasn't finished already, please choose another!")
+            enterpoint()
+            pass # TODO: Finish this section
         elif opt == 'q':
-            pass
+            clear()
+            animate("PySiCa - Thank you for trying it!", 0.035 * int(not DEBUG))
+            break
         else:
             print("Unknown Option, Please Try Again!")
+            enterpoint()
         
-        break
+        clear()
 

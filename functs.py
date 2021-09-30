@@ -23,7 +23,7 @@ class Expr(object):
 class Const(Expr):
 
     def __init__(self, val):
-        assert isinstance(val, int) or isinstance(val, float), " 'val' must be numeric! "
+        assert isinstance(val, int) or isinstance(val, float), " 'val' must be numeric type! "
         self.val = val
 
     def __str__(self):
@@ -59,42 +59,45 @@ class Var(Expr):
 
 class BinaryOperation(Expr):
     SYMBOLS: tuple = ('+', '-', '*', '/')
+    _CLASSNAME: str = ''
 
     def __init__(self, left: Expr, right: Expr):
-        if isinstance(left, Expr):
-            self.left = left
-        elif isinstance(left, int) or isinstance(left, float):
-            self.left = Const(left)
-        elif isinstance(left, str):
-            self.left = Var(left)
-        else:
-            raise TypeError(f"Unsupported Type: {type(left)}")
-        
-        if isinstance(right, Expr):
-            self.right = right
-        elif isinstance(right, int) or isinstance(right, float):
-            self.right = Const(right)
-        elif isinstance(right, str):
-            self.right = Var(right)
-        else:
-            raise TypeError(f"Unsupported Type: {type(right)}")
+        self.left = self.get_instance(left)
+        self.right = self.get_instance(right)
 
         self.symbol = ''
         self._space_between = True
 
     def __str__(self):
         if self._space_between is True:
-            string = '{} {} {}'.format(str(self.left), self.symbol, str(self.right))
+            string = f'{str(self.left)} {self.symbol} {str(self.right)}'
         else:
-            string = '{}{}{}'.format(str(self.left), self.symbol, str(self.right))
+            string = f'{str(self.left)}{self.symbol}{str(self.right)}'
         return string
+    
+    def __repr__(self) -> str:
+        return f'{self._CLASSNAME}({self.left.__repr__()}, {self.right.__repr__()})'
     
     def _is_var(self):
         """Returns if this Binary operation is variable (if it as a variable)"""
-        return bool(self.left._is_var() * self.right._is_var())
+        return self.left._is_var() or self.right._is_var()
+
+    @staticmethod
+    def get_instance(term) -> Expr:
+        if isinstance(term, Expr):
+            return term
+        elif isinstance(term, int) or isinstance(term, float):
+            return Const(term)
+        elif isinstance(term, str):
+            if term.isalpha():
+                return Var(term)
+            elif term.isnumeric():
+                return Const(eval(term))
+        raise TypeError(f"Unsupported Type: {type(term)}")
 
 
 class Add(BinaryOperation):
+    _CLASSNAME = 'Add'
 
     def __init__(self, left: Expr, right: Expr):
         super(Add, self).__init__(left, right)
@@ -104,13 +107,14 @@ class Add(BinaryOperation):
         a = self.left.eval(env)
         b = self.right.eval(env)
         if 0 < a < 1 or 0 < b < 1:
-            res = (a*10 + b*10) / 10
+            res = (a*10 + b*10) // 10
         else:
             res = a + b
         return res
 
 
 class Sub(BinaryOperation):
+    _CLASSNAME = 'Sub'
 
     def __init__(self, left: Expr, right: Expr):
         super(Sub, self).__init__(left, right)
@@ -120,13 +124,14 @@ class Sub(BinaryOperation):
         a = self.left.eval(env)
         b = self.right.eval(env)
         if 0 < a < 1 or 0 < b < 1:
-            res = (a*10 - b*10) / 10
+            res = (a*10 - b*10) // 10
         else:
             res = a - b
         return res
 
 
 class Times(BinaryOperation):
+    _CLASSNAME = 'Times'
     
     def __init__(self, left: Expr, right: Expr):
         super(Times, self).__init__(left, right)
@@ -138,6 +143,7 @@ class Times(BinaryOperation):
 
 
 class Div(BinaryOperation):
+    _CLASSNAME = 'Div'
 
     def __init__(self, left: Expr, right: Expr):
         super(Div, self).__init__(left, right)
@@ -148,9 +154,14 @@ class Div(BinaryOperation):
         a = self.left.eval(env)
         b = self.right.eval(env)
         if b == 0:
-            print(f"Cannot Divide {a} by {b}")
+            print(f"Can't divide {a} by {b}")
             exit(1)
-        return a / b
+
+        res = a / b
+        if int(res) == res:
+            res = int(res)
+
+        return res
 
 
 def eval_expr(expr: str, vars_allowed: bool = False) -> Expr:
@@ -165,12 +176,13 @@ def eval_expr(expr: str, vars_allowed: bool = False) -> Expr:
         if len(sep) > 1:
             left, *right = sep
             expression = EXPRESSIONS[symbol]
-            return expression(eval_expr(left.strip()), eval_expr(symbol.join(right).strip()))
+            return expression(
+                eval_expr(left.strip(), vars_allowed),
+                eval_expr(symbol.join(right).strip(), vars_allowed)
+            )
     else:
-        if expr.isnumeric():
-            return Const(eval(expr))
-        elif vars_allowed and expr.isalpha():
-            return Var(expr)
-        else:
-            print(f"Error: Unsupported Value {expr!r}")
-
+        expression = BinaryOperation.get_instance(expr)
+        if expression._is_var() and vars_allowed is False:
+            print("Error: variable types not allowed on this mode!")
+            exit(1)
+        return expression
