@@ -16,6 +16,8 @@ def clear(force_clear: bool = False):
 
 
 def enterpoint(text: str = None):
+    sys.stdout.write("[Hit Enter to Continue]")
+    sys.stdout.flush()
     sys.stdin.read(1)
 
 
