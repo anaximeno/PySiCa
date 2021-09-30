@@ -1,4 +1,4 @@
-# Python Simple Calculator -> PySiCa
+## Python Simple Calculator - PySiCa
 
 This is a base idea of a calculator made in python, it could be the backend of a real calculator software.
 
