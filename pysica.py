@@ -52,8 +52,18 @@ if __name__ == '__main__':
             print(f"\n = {expr.eval()}\n")
             enterpoint()
         elif opt == 'b':
+            # TODO: create more operation when dealing with variables
             clear()
-            print("Info: This option wasn't finished already, please choose another!")
+            env = None
+            expr = eval_expr(input('> Your Expression >> '), vars_allowed=True)
+            vars = expr.get_variables()
+
+            if any(vars):
+                print("\nWrite the values for the respective vars: ")
+                env = {var: eval(input(f'{var}: ')) for var in vars}
+
+            print(f"\n = {expr.eval(env)}\n")
+            # print("Info: This option wasn't finished already, please choose another!")
             enterpoint()
             pass # TODO: Finish this section
         elif opt == 'q':
