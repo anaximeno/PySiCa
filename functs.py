@@ -110,7 +110,7 @@ class BinaryOperation(Expression):
         return f'{self._OPERATION_NAME}({self.left.__repr__()}, {self.right.__repr__()})'
     
     def _is_var(self):
-        """Returns if this Binary operation is variable (if it as a variable)"""
+        """Returns if this Binary operation is variable (if it has a variable)"""
         return self.left._is_var() or self.right._is_var()
     
     def get_variables(self) -> set:
