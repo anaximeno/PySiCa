@@ -1,5 +1,5 @@
-from time import sleep
 from functs import *
+from time import sleep
 import argparse
 import sys
 import os
@@ -37,7 +37,7 @@ if __name__ == '__main__':
     DEBUG = args.debug
 
     clear()
-    animate("\t\t Welcome to the Python Simple Calculator - PySiCa\n", 0.085 * int(not DEBUG))
+    animate("\t\t Welcome to the Python Simple Calculator - PySiCa\n", 0.025 * int(not DEBUG))
 
     while True:
         print("What do you want to do ?\n")
@@ -56,11 +56,11 @@ if __name__ == '__main__':
             clear()
             env = None
             expr = eval_expr(input('> Your Expression >> '), vars_allowed=True)
-            vars = expr.get_variables()
+            variables = expr.get_variables()
 
-            if any(vars):
+            if any(variables):
                 print("\nWrite the values for the respective vars: ")
-                env = {var: eval(input(f'{var}: ')) for var in vars}
+                env = {var: eval(input(f'{var}: ')) for var in variables}
 
             print(f"\n = {expr.eval(env)}\n")
             # print("Info: This option wasn't finished already, please choose another!")
@@ -68,7 +68,7 @@ if __name__ == '__main__':
             pass # TODO: Finish this section
         elif opt == 'q':
             clear()
-            animate("PySiCa - Thank you for trying it!", 0.035 * int(not DEBUG))
+            animate("PySiCa - Thank you for trying it!", 0.030 * int(not DEBUG))
             break
         else:
             print("Unknown Option, Please Try Again!")

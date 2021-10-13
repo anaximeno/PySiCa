@@ -1,4 +1,6 @@
-class Expr(object):
+import math
+
+class Expression(object):
     _IS_VARIABLE: bool
 
     def __init__(self):
@@ -13,6 +15,27 @@ class Expr(object):
     def __add__(self, value): # TODO: finish this section
         pass
 
+    def __eq__(self, other) -> bool:
+        if isinstance(other, Expression):
+            assert other._is_var() is False, 'This operation cannot be used with variable expressions!'
+            return self.eval() == other.eval()
+        elif isinstance(other, int) or isinstance(other, float):
+            return other == self.eval()
+        else:
+            return False
+
+    def is_zero(self, env=None) -> bool:
+        """Returns if the value of this expression is equal zero."""
+        return bool(self.eval(env) == 0)
+    
+    def is_negative(self, env=None) -> bool:
+        """Returns if this expression is a negative value."""
+        return bool(self.eval(env) < 0)
+    
+    def is_positive(self, env=None) -> bool:
+        """Returns if this expression is a positive value."""
+        return bool(self.eval(env) > 0)
+
     @classmethod
     def _is_var(cls) -> bool:
         return cls._IS_VARIABLE
@@ -25,7 +48,7 @@ class Expr(object):
         pass
 
 
-class Const(Expr):
+class Const(Expression):
     _IS_VARIABLE: bool = False
 
     def __init__(self, val):
@@ -43,7 +66,7 @@ class Const(Expr):
         return self.val
 
 
-class Var(Expr):
+class Var(Expression):
     _IS_VARIABLE: bool = True
 
     def __init__(self, name: str):
@@ -64,13 +87,13 @@ class Var(Expr):
             exit(1)
 
 
-class BinaryOperation(Expr):
+class BinaryOperation(Expression):
     # TODO: add exponentional class symbol
-    _ALLOWED_OPERATION_SYMBOLS: tuple = ('+', '-', '*', '/')
-    _OPERATION_SYMBOL: str
+    _OPERATION_SYMBOLS: tuple = ('+', '-', '*', '/')
+    _SYMBOL: str
     _OPERATION_NAME: str
 
-    def __init__(self, left: Expr, right: Expr):
+    def __init__(self, left: Expression, right: Expression):
         self.left = self._get_operation(left)
         self.right = self._get_operation(right)
 
@@ -78,9 +101,9 @@ class BinaryOperation(Expr):
 
     def __str__(self):
         if self._space_when_printing_symbol is True:
-            string = f'{str(self.left)} {self._OPERATION_SYMBOL} {str(self.right)}'
+            string = f'{str(self.left)} {self._SYMBOL} {str(self.right)}'
         else:
-            string = f'{str(self.left)}{self._OPERATION_SYMBOL}{str(self.right)}'
+            string = f'{str(self.left)}{self._SYMBOL}{str(self.right)}'
         return string
 
     def __repr__(self) -> str:
@@ -95,8 +118,8 @@ class BinaryOperation(Expr):
         return self.left.get_variables().union(self.right.get_variables())
 
     @staticmethod
-    def _get_operation(term) -> Expr: # Change name to instantiate?
-        if isinstance(term, Expr):
+    def _get_operation(term) -> Expression: # Change name to instantiate?
+        if isinstance(term, Expression):
             return term
         elif isinstance(term, int) or isinstance(term, float):
             return Const(term)
@@ -110,13 +133,13 @@ class BinaryOperation(Expr):
 
 class Add(BinaryOperation):
     _OPERATION_NAME = 'Add'
-    _OPERATION_SYMBOL = '+'
+    _SYMBOL = '+'
 
     def eval(self, env=None):
         a = self.left.eval(env)
         b = self.right.eval(env)
         if 0 < a < 1 or 0 < b < 1:
-            res = (a*10 + b*10) // 10
+            res = (a*10 + b*10) / 10
         else:
             res = a + b
         return res
@@ -124,13 +147,13 @@ class Add(BinaryOperation):
 
 class Sub(BinaryOperation):
     _OPERATION_NAME = 'Sub'
-    _OPERATION_SYMBOL = '-'
+    _SYMBOL = '-'
 
     def eval(self, env=None):
         a = self.left.eval(env)
         b = self.right.eval(env)
         if 0 < a < 1 or 0 < b < 1:
-            res = (a*10 - b*10) // 10
+            res = (a*10 - b*10) / 10
         else:
             res = a - b
         return res
@@ -138,9 +161,9 @@ class Sub(BinaryOperation):
 
 class Times(BinaryOperation):
     _OPERATION_NAME = 'Times'
-    _OPERATION_SYMBOL = '*'
+    _SYMBOL = '*'
     
-    def __init__(self, left: Expr, right: Expr):
+    def __init__(self, left: Expression, right: Expression):
         super(Times, self).__init__(left, right)
         self._space_when_printing_symbol = False
 
@@ -150,38 +173,37 @@ class Times(BinaryOperation):
 
 class Div(BinaryOperation):
     _OPERATION_NAME = 'Div'
-    _OPERATION_SYMBOL = '/'
+    _SYMBOL = '/'
 
-    def __init__(self, left: Expr, right: Expr):
+    def __init__(self, left: Expression, right: Expression):
         super(Div, self).__init__(left, right)
         self._space_when_printing_symbol = False
 
     def eval(self, env=None):
-        a = self.left.eval(env)
-        b = self.right.eval(env)
-        if b == 0:
-            print(f"Can't divide {a} by {b}")
-            exit(1)
+        if self.right.is_zero(env):
+            raise ZeroDivisionError(f"Can't divide {self.left} by {self.right.eval(env)}")
 
-        res = a / b
-        if int(res) == res:
-            res = int(res)
+        result = self.left.eval(env) / self.right.eval(env)
+        truncated_result = math.trunc(result)
 
-        return res
+        if truncated_result == result:
+            return truncated_result
+        else:
+            return result
 
 
 class Exp(BinaryOperation):
     _OPERATION_NAME = 'Exp'
-    _OPERATION_SYMBOL = '^'
+    _SYMBOL = '^'
 
-    def __init__(self, base: Expr, exp: Expr):
+    def __init__(self, base: Expression, exp: Expression):
         super().__init__(base, exp)
         # TODO: finish this section
         pass
     
 
 
-def eval_expr(expr: str, vars_allowed: bool = False) -> Expr:
+def eval_expr(expr: str, vars_allowed: bool = False) -> Expression:
     """Read a string expression and return the object class representing the operation.
 
     Args:
@@ -202,29 +224,29 @@ def eval_expr(expr: str, vars_allowed: bool = False) -> Expr:
     """
 
     EXPRESSIONS = dict([
-        (Add._OPERATION_SYMBOL, Add),
-        (Sub._OPERATION_SYMBOL, Sub),
-        (Times._OPERATION_SYMBOL, Times),
-        (Div._OPERATION_SYMBOL, Div)
-        ])
+        (Add._SYMBOL, Add),
+        (Sub._SYMBOL, Sub),
+        (Times._SYMBOL, Times),
+        (Div._SYMBOL, Div)
+    ])
 
-    for symbol in BinaryOperation._ALLOWED_OPERATION_SYMBOLS:
+    for symbol in BinaryOperation._OPERATION_SYMBOLS:
         sep = expr.split(symbol)
         if len(sep) > 1:
             left, *right = sep
-            operation = EXPRESSIONS.get(symbol)
+            Operation = EXPRESSIONS.get(symbol)
 
-            if operation is Sub:
-                new_expr = Add._OPERATION_SYMBOL.join(right)
+            if Operation is not Sub:
+                new_right_expr = symbol.join(right)
             else:
-                new_expr = symbol.join(right)
+                new_right_expr = Add._SYMBOL.join(right)
 
-            return operation(eval_expr(left.strip(), vars_allowed),
-                eval_expr(new_expr.strip(), vars_allowed)
+            return Operation(
+                eval_expr(left.strip(), vars_allowed),
+                eval_expr(new_right_expr.strip(), vars_allowed)
             )
     else:
-        operation = BinaryOperation._get_operation(expr)
-        if operation._is_var() and not vars_allowed:
-            print("Error: variable types are not allowed on this mode!")
-            exit(1)
-        return operation
+        Operation = BinaryOperation._get_operation(expr)
+        if Operation._is_var() and not vars_allowed:
+            raise ValueError("Variable are not allowed on this mode!")
+        return Operation
