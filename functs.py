@@ -13,7 +13,10 @@ class Expression(object):
         return self.__str__()
 
     def __add__(self, value): # TODO: finish this section
-        pass
+        if isinstance(value, (Expression, int, float, str)):
+            return Add(self, value)
+        else:
+            raise ValueError(f'Type {type(value)} not allowed on this operation!')
 
     def __eq__(self, other) -> bool:
         if isinstance(other, Expression):
@@ -121,7 +124,7 @@ class BinaryOperation(Expression):
     def _get_operation(term) -> Expression: # Change name to instantiate?
         if isinstance(term, Expression):
             return term
-        elif isinstance(term, int) or isinstance(term, float):
+        elif isinstance(term, (int, float)):
             return Const(term)
         elif isinstance(term, str):
             if term.isalpha():
@@ -203,7 +206,7 @@ class Exp(BinaryOperation):
     
 
 
-def eval_expr(expr: str, vars_allowed: bool = False) -> Expression:
+def parse_expression(expr: str, vars_allowed: bool = False) -> Expression:
     """Read a string expression and return the object class representing the operation.
 
     Args:
@@ -234,7 +237,7 @@ def eval_expr(expr: str, vars_allowed: bool = False) -> Expression:
         sep = expr.split(symbol)
         if len(sep) > 1:
             left, *right = sep
-            Operation = EXPRESSIONS.get(symbol)
+            Operation: Expression = EXPRESSIONS.get(symbol)
 
             if Operation is not Sub:
                 new_right_expr = symbol.join(right)
@@ -242,8 +245,8 @@ def eval_expr(expr: str, vars_allowed: bool = False) -> Expression:
                 new_right_expr = Add._SYMBOL.join(right)
 
             return Operation(
-                eval_expr(left.strip(), vars_allowed),
-                eval_expr(new_right_expr.strip(), vars_allowed)
+                parse_expression(left.strip(), vars_allowed),
+                parse_expression(new_right_expr.strip(), vars_allowed)
             )
     else:
         Operation = BinaryOperation._get_operation(expr)

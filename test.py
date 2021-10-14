@@ -34,13 +34,13 @@ def test_full_expr_with_vars():
     assert expr.eval(env) == 9
 
 
-def test_eval_expr():
-    expr = eval_expr('2 - 5 / 25 - 7 + 3')
+def test_parse_expr():
+    expr = parse_expression('2 - 5 / 25 - 7 + 3')
     assert expr.eval() == -2.2
 
 
-def test_eval_with_vars():
-    expr = eval_expr('5 - x - 9 + y', True)
+def test_parse_with_vars():
+    expr = parse_expression('5 - x - 9 + y', True)
     env = {
         'x': 3,
         'y': 12

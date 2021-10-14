@@ -48,14 +48,14 @@ if __name__ == '__main__':
 
         if opt == 'a':
             clear()
-            expr = eval_expr(input('> Your Expression >> '))
+            expr = parse_expression(input('> Your Expression >> '))
             print(f"\n = {expr.eval()}\n")
             enterpoint()
         elif opt == 'b':
             # TODO: create more operation when dealing with variables
             clear()
             env = None
-            expr = eval_expr(input('> Your Expression >> '), vars_allowed=True)
+            expr = parse_expression(input('> Your Expression >> '), vars_allowed=True)
             variables = expr.get_variables()
 
             if any(variables):
