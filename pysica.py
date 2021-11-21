@@ -1,4 +1,4 @@
-from functs import *
+from common import *
 from time import sleep
 import argparse
 import sys

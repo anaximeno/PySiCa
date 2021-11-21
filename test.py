@@ -1,4 +1,4 @@
-from functs import *
+from common import *
 
 
 def test_add():
