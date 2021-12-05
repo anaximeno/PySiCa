@@ -52,10 +52,10 @@ if __name__ == '__main__':
             print(f"\n = {expr.eval()}\n")
             enterpoint()
         elif opt == 'b':
-            # TODO: create more operation when dealing with variables
+            # TODO: create more operations when dealing with variables
             clear()
             env = None
-            expr = parse_expression(input('> Your Expression >> '), vars_allowed=True)
+            expr = parse_expression(input('> Your Expression >> '), allow_vars=True)
             variables = expr.get_variables()
 
             if any(variables):

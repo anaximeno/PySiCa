@@ -1,3 +1,4 @@
+"""PySiCa unit tests."""
 from common import *
 
 
@@ -11,7 +12,7 @@ def test_sub():
     assert s.eval() == -62
 
 def test_times():
-    t = Times(6, 5)
+    t = Mult(6, 5)
     assert t.eval() == 30
 
 
@@ -21,12 +22,12 @@ def test_div():
 
 
 def test_full_expr():
-    expr = Add(Times(8, Div(50, 25)), Sub(12, 8))
+    expr = Add(Mult(8, Div(50, 25)), Sub(12, 8))
     assert expr.eval() == 20
 
 
 def test_full_expr_with_vars():
-    expr = Add(Times('x', 'x'), Div(5, Sub('x', 'y')))
+    expr = Add(Mult('x', 'x'), Div(5, Sub('x', 'y')))
     env = {
         'x': 2,
         'y': 1
@@ -40,9 +41,13 @@ def test_parse_expr():
 
 
 def test_parse_with_vars():
-    expr = parse_expression('5 - x - 9 + y', True)
+    expr = parse_expression('5 - x - 9 + y', allow_vars=True)
     env = {
         'x': 3,
         'y': 12
     }
     assert expr.eval(env) == 5
+
+def test_parse_beginning_with_minus():
+    expr = parse_expression('- 8 + 3')
+    assert expr.eval() == -5

@@ -30,11 +30,11 @@ class Expression(object):
     def is_zero(self, env=None) -> bool:
         """Returns if the value of this expression is equal zero."""
         return bool(self.eval(env) == 0)
-    
+
     def is_negative(self, env=None) -> bool:
         """Returns if this expression is a negative value."""
         return bool(self.eval(env) < 0)
-    
+
     def is_positive(self, env=None) -> bool:
         """Returns if this expression is a positive value."""
         return bool(self.eval(env) > 0)
@@ -77,7 +77,7 @@ class Var(Expression):
 
     def __str__(self):
         return str(self.name)
-    
+
     def get_variables(self) -> set:
         """Return a set with all variables of the Operation inside."""
         return {self.name}
@@ -97,8 +97,8 @@ class BinaryOperation(Expression):
     _OPERATION_NAME: str
 
     def __init__(self, left: Expression, right: Expression):
-        self.left = self._get_operation(left)
-        self.right = self._get_operation(right)
+        self.left = self.instantiate_expression(left)
+        self.right = self.instantiate_expression(right)
 
         self._space_when_printing_symbol = True
 
@@ -111,17 +111,17 @@ class BinaryOperation(Expression):
 
     def __repr__(self) -> str:
         return f'{self._OPERATION_NAME}({self.left.__repr__()}, {self.right.__repr__()})'
-    
+
     def _is_var(self):
         """Returns if this Binary operation is variable (if it has a variable)"""
         return self.left._is_var() or self.right._is_var()
-    
+
     def get_variables(self) -> set:
         """Return a set with all variables of the Operation inside."""
         return self.left.get_variables().union(self.right.get_variables())
 
     @staticmethod
-    def _get_operation(term) -> Expression: # Change name to instantiate?
+    def instantiate_expression(term) -> Expression:
         if isinstance(term, Expression):
             return term
         elif isinstance(term, (int, float)):
@@ -162,12 +162,12 @@ class Sub(BinaryOperation):
         return res
 
 
-class Times(BinaryOperation):
+class Mult(BinaryOperation):
     _OPERATION_NAME = 'Times'
     _SYMBOL = '*'
-    
+
     def __init__(self, left: Expression, right: Expression):
-        super(Times, self).__init__(left, right)
+        super(Mult, self).__init__(left, right)
         self._space_when_printing_symbol = False
 
     def eval(self, env=None):
@@ -203,21 +203,21 @@ class Exp(BinaryOperation):
         super().__init__(base, exp)
         # TODO: finish this section
         pass
-    
 
 
-def parse_expression(expr: str, vars_allowed: bool = False) -> Expression:
+
+def parse_expression(expression: str, allow_vars: bool = False) -> Expression:
     """Read a string expression and return the object class representing the operation.
 
     Args:
-        expr: (str) a string with the expression (ex. `'2 + 3'`)
-        vars_allowed: (bool) if True the function will allow expressions with variables too (it allows for ex. `'x + 9'`)
-    
+        expression: (str) a string with the expression (e.g. `'2 + 3'`)
+        allow_vars: (bool) if True the function will allow expressions with variables too (e.g. `'x + 9'`)
+
     Returns:
-        Expr (a child class of Expr)
+        Expr (an object of a subclass of Expression)
 
     Usage:
-    >>> expr = eval_expr('4 * 5 - 10')
+    >>> expr = parse_expression('4 * 5 - 10')
     >>> expr
     Sub(Times(4, 5), 10)
     >>> print(expr)
@@ -229,27 +229,26 @@ def parse_expression(expr: str, vars_allowed: bool = False) -> Expression:
     EXPRESSIONS = dict([
         (Add._SYMBOL, Add),
         (Sub._SYMBOL, Sub),
-        (Times._SYMBOL, Times),
+        (Mult._SYMBOL, Mult),
         (Div._SYMBOL, Div)
     ])
+    expression = expression if expression.rstrip()[0] != Sub._SYMBOL else '0 ' + expression.rstrip()
+    for symbol in EXPRESSIONS.keys():
+        if symbol in expression:
+            left, *right = expression.split(symbol)
+            expr = EXPRESSIONS.get(symbol)
 
-    for symbol in BinaryOperation._OPERATION_SYMBOLS:
-        sep = expr.split(symbol)
-        if len(sep) > 1:
-            left, *right = sep
-            Operation: Expression = EXPRESSIONS.get(symbol)
-
-            if Operation is not Sub:
+            if expr is not Sub:
                 new_right_expr = symbol.join(right)
             else:
                 new_right_expr = Add._SYMBOL.join(right)
 
-            return Operation(
-                parse_expression(left.strip(), vars_allowed),
-                parse_expression(new_right_expr.strip(), vars_allowed)
+            return expr(
+                parse_expression(left.strip(), allow_vars),
+                parse_expression(new_right_expr.strip(), allow_vars)
             )
     else:
-        Operation = BinaryOperation._get_operation(expr)
-        if Operation._is_var() and not vars_allowed:
-            raise ValueError("Variable are not allowed on this mode!")
-        return Operation
+        expr = BinaryOperation.instantiate_expression(expression)
+        if expr._is_var() and not allow_vars:
+            raise ValueError("Variables are not allowed on this mode!")
+        return expr
