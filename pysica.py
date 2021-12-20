@@ -13,7 +13,7 @@ def clear(force_clear: bool = False):
 
 
 def enterpoint(text: str = None):
-    sys.stdout.write("[Hit Enter to Continue]")
+    sys.stdout.write("[Click Enter]")
     sys.stdout.flush()
     sys.stdin.read(1)
 
@@ -42,34 +42,34 @@ if __name__ == '__main__':
 
     while True:
         print("What do you want to do ?\n")
-        print("  a - Use the calculator for calcs without vars;")
-        print("  b - Use the calculator for calcs with vars;")
-        print("  q - Quit the program.")
-        opt = input('\n> Your choise >> ').lower()
+        print("  a -> Use the calculator for calcs without vars;")
+        print("  b -> Use the calculator for calcs with vars;")
+        print("  q -> Quit the program.")
+        opt = input('\n> ').lower()
 
         if opt == 'a':
             clear()
-            expr = parse_expression(input('> Your Expression >> '))
+            print('Just Write In: ( e.g. 30 * 3 - 12 / 4 )\n')
+            expr = parse_expression(input((' .' * 10) + '\r'))
             print(f"\n = {expr.eval()}\n")
+            
             enterpoint()
         elif opt == 'b':
-            # TODO: create more operations when dealing with variables
             clear()
             env = None
-            expr = parse_expression(input('> Your Expression >> '), allow_vars=True)
+            print('Just Write In: ( e.g. k - k / 4 )\n')
+            expr = parse_expression(input((' .' * 10) + '\r'), allow_vars=True)
             variables = expr.get_variables()
 
             if any(variables):
-                print("\nWrite the values for the respective vars: ")
-                env = {var: eval(input(f'{var}: ')) for var in variables}
+                print("\nWrite the value of: ")
+                env = {var: eval(input(f'\t -> {var}: ')) for var in variables}
 
             print(f"\n = {expr.eval(env)}\n")
-            # print("Info: This option wasn't finished already, please choose another!")
             enterpoint()
-            pass # TODO: Finish this section
         elif opt == 'q':
             clear()
-            animate("PySiCa: Looking forward for the next try ;-)", 0.030 * int(not DEBUG))
+            animate("PySiCa: Looking forward for the next try ;)", 0.030 * int(not DEBUG))
             break
         else:
             print("Unknown Option, Try Again!")
