@@ -1,9 +1,10 @@
 import math
 
+
 class Expression(object):
     _IS_VARIABLE: bool
 
-    def __init__(self):
+    def __init__(self) -> None:
         pass
 
     def __str__(self) -> str:
@@ -12,7 +13,7 @@ class Expression(object):
     def __repr__(self) -> str:
         return self.__str__()
 
-    def __add__(self, value): # TODO: finish this section
+    def __add__(self, value):
         if isinstance(value, (Expression, int, float, str)):
             return Add(self, value)
         else:
@@ -20,7 +21,7 @@ class Expression(object):
 
     def __eq__(self, other) -> bool:
         if isinstance(other, Expression):
-            assert other._is_var() is False, 'This operation cannot be used with variable expressions!'
+            assert other.is_var() is False, 'This operation cannot be used with variable expressions!'
             return self.eval() == other.eval()
         elif isinstance(other, int) or isinstance(other, float):
             return other == self.eval()
@@ -40,7 +41,7 @@ class Expression(object):
         return bool(self.eval(env) > 0)
 
     @classmethod
-    def _is_var(cls) -> bool:
+    def is_var(cls) -> bool:
         return cls._IS_VARIABLE
 
     def get_variables(self) -> set:
@@ -72,10 +73,10 @@ class Const(Expression):
 class Var(Expression):
     _IS_VARIABLE: bool = True
 
-    def __init__(self, name: str):
+    def __init__(self, name: str) -> None:
         self.name = name
 
-    def __str__(self):
+    def __str__(self) -> str:
         return str(self.name)
 
     def get_variables(self) -> set:
@@ -96,13 +97,13 @@ class BinaryOperation(Expression):
     _SYMBOL: str
     _OPERATION_NAME: str
 
-    def __init__(self, left: Expression, right: Expression):
-        self.left = self.instantiate_expression(left)
-        self.right = self.instantiate_expression(right)
+    def __init__(self, left: Expression, right: Expression) -> None:
+        self.left = self.get_new_expr(left)
+        self.right = self.get_new_expr(right)
 
         self._space_when_printing_symbol = True
 
-    def __str__(self):
+    def __str__(self) -> str:
         if self._space_when_printing_symbol is True:
             string = f'{str(self.left)} {self._SYMBOL} {str(self.right)}'
         else:
@@ -112,16 +113,16 @@ class BinaryOperation(Expression):
     def __repr__(self) -> str:
         return f'{self._OPERATION_NAME}({self.left.__repr__()}, {self.right.__repr__()})'
 
-    def _is_var(self):
+    def is_var(self) -> bool:
         """Returns if this Binary operation is variable (if it has a variable)"""
-        return self.left._is_var() or self.right._is_var()
+        return self.left.is_var() or self.right.is_var()
 
     def get_variables(self) -> set:
         """Return a set with all variables of the Operation inside."""
         return self.left.get_variables().union(self.right.get_variables())
 
     @staticmethod
-    def instantiate_expression(term) -> Expression:
+    def get_new_expr(term) -> Expression:
         if isinstance(term, Expression):
             return term
         elif isinstance(term, (int, float)):
@@ -184,7 +185,7 @@ class Div(BinaryOperation):
 
     def eval(self, env=None):
         if self.right.is_zero(env):
-            raise ZeroDivisionError(f"Can't divide {self.left} by {self.right.eval(env)}")
+            raise ZeroDivisionError(f"Can't divide a number by zero: {self.left}/{self.right.eval(env)}")
 
         result = self.left.eval(env) / self.right.eval(env)
         truncated_result = math.trunc(result)
@@ -225,13 +226,12 @@ def parse_expression(expression: str, allow_vars: bool = False) -> Expression:
     >>> expr.eval()
     10
     """
-
     EXPRESSIONS = dict([
         (Add._SYMBOL, Add),
         (Sub._SYMBOL, Sub),
         (Mult._SYMBOL, Mult),
         (Div._SYMBOL, Div)
-    ])
+        ])
     expression = expression if expression.rstrip()[0] != Sub._SYMBOL else '0 ' + expression.rstrip()
     for symbol in EXPRESSIONS.keys():
         if symbol in expression:
@@ -248,7 +248,7 @@ def parse_expression(expression: str, allow_vars: bool = False) -> Expression:
                 parse_expression(new_right_expr.strip(), allow_vars)
             )
     else:
-        expr = BinaryOperation.instantiate_expression(expression)
-        if expr._is_var() and not allow_vars:
+        expr = BinaryOperation.get_new_expr(expression)
+        if expr.is_var() and not allow_vars:
             raise ValueError("Variables are not allowed on this mode!")
         return expr

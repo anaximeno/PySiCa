@@ -5,9 +5,6 @@ import sys
 import os
 
 
-DEBUG = False
-
-
 def clear(force_clear: bool = False):
     """Clear the Console"""
     if not DEBUG or force_clear is True:
@@ -36,8 +33,12 @@ if __name__ == '__main__':
     args = parser.parse_args()
     DEBUG = args.debug
 
-    clear()
-    animate("\t\t Welcome to the Python Simple Calculator - PySiCa\n", 0.025 * int(not DEBUG))
+    if DEBUG:
+        print('\t\t', end='')
+        print('Debug Mode'.center(30, '-'), '\n')
+    else:
+        clear()
+        animate("\t\t Welcome to the Python Simple Calculator - PySiCa\n", 0.025 * int(not DEBUG))
 
     while True:
         print("What do you want to do ?\n")
@@ -68,10 +69,10 @@ if __name__ == '__main__':
             pass # TODO: Finish this section
         elif opt == 'q':
             clear()
-            animate("PySiCa - Thank you for trying it!", 0.030 * int(not DEBUG))
+            animate("PySiCa: Looking forward for the next try ;-)", 0.030 * int(not DEBUG))
             break
         else:
-            print("Unknown Option, Please Try Again!")
+            print("Unknown Option, Try Again!")
             enterpoint()
         
         clear()
