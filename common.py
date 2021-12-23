@@ -6,6 +6,7 @@ import math
 #             -> turn into a function of n vars and, test solutions for n = k, for k in Real set
 #             -> Solve it if it is a quadratic or a linear equation 
 
+
 class Expression(object):
     _IS_VARIABLE: bool
 
@@ -97,7 +98,6 @@ class Var(Expression):
 
 
 class BinaryOperation(Expression):
-    # TODO: add exponentional class symbol
     _OPERATION_SYMBOLS: tuple = ('+', '-', '*', '/')
     _SYMBOL: str
     _OPERATION_NAME: str
@@ -130,13 +130,18 @@ class BinaryOperation(Expression):
     def get_new_expr(term) -> Expression:
         if isinstance(term, Expression):
             return term
-        elif isinstance(term, (int, float)):
+        elif isinstance(term, int) or isinstance(term, float):
             return Const(term)
         elif isinstance(term, str):
             if term.isalpha():
                 return Var(term)
             elif term.isnumeric():
                 return Const(eval(term))
+            else: # TODO: improve this section
+                try:
+                    return Const(float(term))
+                except ValueError:
+                    pass
         raise ValueError(f"Got unsupported value: {term!r}")
 
 
@@ -209,7 +214,6 @@ class Exp(BinaryOperation):
         super().__init__(base, exp)
         # TODO: finish this section
         pass
-
 
 
 def parse_expression(expression: str, allow_vars: bool = False) -> Expression:

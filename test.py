@@ -1,4 +1,4 @@
-"""PySiCa unit tests."""
+"""Unit tests for PySiCa."""
 from common import *
 
 
@@ -48,6 +48,13 @@ def test_parse_with_vars():
     }
     assert expr.eval(env) == 5
 
+
 def test_parse_beginning_with_minus():
     expr = parse_expression('- 8 + 3')
     assert expr.eval() == -5
+
+
+def test_float_values():
+    a = parse_expression ('0.569')
+    assert a == 0.569
+
