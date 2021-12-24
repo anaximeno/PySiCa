@@ -5,9 +5,11 @@ import argparse
 import sys
 import os
 
+__version__ = '1.4'
 
 class PySiCa(object):
     _NAME: str = 'PySiCa'
+    _VERSION: str = __version__
 
     def __init__(self, args, debug: bool = False) -> None:
         super(PySiCa, self).__init__()
@@ -17,6 +19,13 @@ class PySiCa(object):
         self._debug = debug
         self._out = sys.stdout
         self._in = sys.stdin
+    
+    def __str__(self) -> str:
+        return '{} {}'.format(self.name, self._VERSION)
+
+    @property
+    def name(self):
+        return self._NAME
 
     def enterpoint(self, message: str = "[Click Enter]"):
         self._out.write(f"{self._NAME}: {message}")
