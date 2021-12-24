@@ -5,6 +5,7 @@ import math
 #       and operate over it. Could do things like:
 #             -> turn into a function of n vars and, test solutions for n = k, for k in Real set
 #             -> Solve it if it is a quadratic or a linear equation 
+#             -> Store the previous calculation on a stack or list - The better option - The better option!
 
 
 class Expression(object):
@@ -179,7 +180,7 @@ class Mult(BinaryOperation):
 
     def __init__(self, left: Expression, right: Expression):
         super(Mult, self).__init__(left, right)
-        self._space_when_printing_symbol = False
+        self._space_when_prSinting_symbol = False
 
     def eval(self, env=None):
         return self.left.eval(env) * self.right.eval(env)
@@ -216,23 +217,23 @@ class Exp(BinaryOperation):
         pass
 
 
-def parse_expression(expression: str, allow_vars: bool = False) -> Expression:
+def expr(string: str, allow_variables: bool = False) -> Expression:
     """Read a string expression and return the object class representing the operation.
 
     Args:
         expression: (str) a string with the expression (e.g. `'2 + 3'`)
-        allow_vars: (bool) if True the function will allow expressions with variables too (e.g. `'x + 9'`)
+        allow_variables: (bool) if True the function will allow expressions with variables too (e.g. `'x + 9'`)
 
     Returns:
-        Expr (an object of a subclass of Expression)
+        Expression (an instantiated object of a subclass of Expression)
 
     Usage:
-    >>> expr = parse_expression('4 * 5 - 10')
-    >>> expr
+    >>> expression = expr('4 * 5 - 10')
+    >>> expression
     Sub(Times(4, 5), 10)
-    >>> print(expr)
+    >>> print(expression)
     '4*5 - 10'
-    >>> expr.eval()
+    >>> expression.eval()
     10
     """
     EXPRESSIONS = dict([
@@ -241,23 +242,23 @@ def parse_expression(expression: str, allow_vars: bool = False) -> Expression:
         (Mult._SYMBOL, Mult),
         (Div._SYMBOL, Div)
         ])
-    expression = expression if expression.rstrip()[0] != Sub._SYMBOL else '0 ' + expression.rstrip()
+    expression = string if string.rstrip()[0] != Sub._SYMBOL else '0 ' + string.rstrip()
     for symbol in EXPRESSIONS.keys():
         if symbol in expression:
             left, *right = expression.split(symbol)
-            expr = EXPRESSIONS.get(symbol)
+            expr_class = EXPRESSIONS.get(symbol)
 
-            if expr is not Sub:
+            if expr_class is not Sub:
                 new_right_expr = symbol.join(right)
             else:
                 new_right_expr = Add._SYMBOL.join(right)
 
-            return expr(
-                parse_expression(left.strip(), allow_vars),
-                parse_expression(new_right_expr.strip(), allow_vars)
+            return expr_class(
+                expr(left.strip(), allow_variables),
+                expr(new_right_expr.strip(), allow_variables)
             )
     else:
-        expr = BinaryOperation.get_new_expr(expression)
-        if expr.is_var() and not allow_vars:
+        expr_obj = BinaryOperation.get_new_expr(expression)
+        if expr_obj.is_var() and not allow_variables:
             raise ValueError("Variables are not allowed on this mode!")
-        return expr
+        return expr_obj
