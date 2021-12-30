@@ -46,25 +46,24 @@ def test_full_expression_with_vars():
 
 
 def test_parse_expression():
-    expression = expr('2 - 5 / 25 - 7 + 3')
-    assert expression.eval() == -2.2
+    assert expr('2 - 5 / 25 - 7 + 3').eval() == -2.2
 
 
 def test_parse_with_vars():
-    expression = expr('5 - x - 9 + y', allow_variables=True)
     env = {
         'x': 3,
         'y': 12
     }
-    assert expression.eval(env) == 5
+    assert expr('5 - x - 9 + y', allow_variables=True).eval(env) == 5
 
 
 def test_parse_beginning_with_minus():
-    expression = expr('- 8 + 3')
-    assert expression.eval() == -5
+    assert expr('- 8 + 3').eval() == -5
 
 
 def test_float_values():
-    a = expr ('0.569')
-    assert a == 0.569
+    assert expr ('0.569') == 0.569
 
+
+def test_values_beginning_with_zero():
+    assert expr ('09').eval() == 9
