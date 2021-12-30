@@ -1,11 +1,15 @@
-from collections import deque
-from time import sleep
+from stack import Stack
 from expressions import expr
+
+from time import sleep
 import argparse
+import math
 import sys
 import os
 
+
 __version__ = '1.4'
+
 
 class PySiCa(object):
     _NAME: str = 'PySiCa'
@@ -13,13 +17,19 @@ class PySiCa(object):
 
     def __init__(self, args, debug: bool = False) -> None:
         super(PySiCa, self).__init__()
-        # TODO: implement stack
-        self._expr_stack = deque()
+
         self._args = args
         self._debug = debug
         self._out = sys.stdout
         self._in = sys.stdin
-    
+
+        # TODO: implement a stack to store current position
+        # TODO: instead of stack it may be better ot use a list, or something like it
+        # self._system_stacks = {
+        #     'non_variable_calcs': Stack(limit=None, input_type=str),
+        #     'variable_calcs': Stack(limit=None, input_type=str)
+        # }
+
     def __str__(self) -> str:
         return '{} {}'.format(self.name, self._VERSION)
 
@@ -31,7 +41,7 @@ class PySiCa(object):
         self._out.write(f"{self._NAME}: {message}")
         self._out.flush()
         self._in.read(1)
-    
+
     def animate(self, string: str, secs: float = 0.05):
         for char in string:
             if char != '\n' and char != '\t':
@@ -46,41 +56,59 @@ class PySiCa(object):
             os.system('clear')
         return not self._debug or force
 
-    def talk(self, message, animation_time: float = 0.05) -> None:
-        self.animate(f"{self._NAME}: {message}", animation_time * int(not self._debug))
+    def talk(self, message, animation_time: float = 0.0123 * math.pi) -> None:
+        self.animate(f"{self._NAME}: {message}",
+                     animation_time * int(not self._debug))
 
     def run(self):
+        PREV_BLOCK = '▯'
+        N_PREV_BLOCKS = 20
+        INPUT_PREV_STR = (PREV_BLOCK * N_PREV_BLOCKS) + '\r'
         if self._debug is True:
             self.talk('Debug Mode\n')
         else:
             self.clear()
-            self.talk("Welcome to the Python Simple Calculator! \n", 0.025)
+            self.talk("Welcome to the Python Simple Calculator!", 0.02 * math.pi)
+            sleep(0.5)
+            self.clear()
         while True:
             self.talk("What do you want to do ?\n")
-            print("  a -> Use the calculator for calcs without vars(e.g. 30 * 3 - 12 / 4 );")
-            print("  b -> Use the calculator for calcs with vars(e.g. k - k / 4 );")
-            print("  q -> Quit the program.")
+            print(
+                "  a -> Use the calculator for calcs without vars(e.g. 30 * 3 - 12 / 4 )"
+            )
+            print("  b -> Use the calculator for calcs with vars(e.g. k - k / 4 )")
+            print("  q -> Quit the program")
             opt = input('\n> ').lower()
-            if opt == 'a':
+            if opt == 'a':  # Non variable calculations
                 self.clear()
-                entry = input((' .' * 5) + '\r')
-                print(f"\n = {expr(entry).eval()}\n")
+                entry = input(INPUT_PREV_STR)
+                try:
+                    result = f" = {expr(entry).eval()}\n"
+                except ValueError:
+                    result = " --> Unsupported Expression\n"
+                self.clear()
+                print(entry + result)
                 self.enterpoint()
-            elif opt == 'b':
+            elif opt == 'b':  # Variable calculations
+                # TODO: improve this section
                 self.clear()
-                expression = expr(input((' .' * 10) + '\r'), allow_variables=True)
+                expression = expr(input(INPUT_PREV_STR))
                 variables = expression.get_variables()
 
                 env = None
                 if any(variables):
                     print("\nWrite the value of: ")
-                    env = {var: eval(input(f'\t -> {var}: ')) for var in variables}
-
-                print(f"\n = {expression.eval(env)}\n")
+                    env = {var: eval(input(f'\t -> {var}: '))
+                           for var in variables}
+                try:
+                    result = f" = {expr(entry).eval()}\n"
+                except ValueError:
+                    result = " --> Unsupported Expression\n"
+                print(f"\n = {result}\n")
                 self.enterpoint()
             elif opt == 'q':
                 self.clear()
-                self.talk("Looking forward for the next try ;)", 0.030)
+                self.talk("Looking forward for the next try ;)")
                 break
             else:
                 self.talk("Unknown Option, Try Again!")
@@ -90,6 +118,8 @@ class PySiCa(object):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser('PySiCa')
+    parser.add_argument("--version", help="Display the version",
+                        action='version', version='%(prog)s {}'.format(__version__))
     parser.add_argument('-D', '--debug', action='store_true')
     args = parser.parse_args()
     app = PySiCa(args, args.debug)
