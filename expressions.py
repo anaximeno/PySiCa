@@ -107,10 +107,10 @@ class BinaryOperation(Expression):
         self.left = self.get_new_expr(left)
         self.right = self.get_new_expr(right)
 
-        self._space_when_printing_symbol = True
+        self._add_space_between_symbols = True
 
     def __str__(self) -> str:
-        if self._space_when_printing_symbol is True:
+        if self._add_space_between_symbols is True:
             string = f'{str(self.left)} {self._SYMBOL} {str(self.right)}'
         else:
             string = f'{str(self.left)}{self._SYMBOL}{str(self.right)}'
@@ -180,7 +180,7 @@ class Mult(BinaryOperation):
 
     def __init__(self, left: Expression, right: Expression):
         super(Mult, self).__init__(left, right)
-        self._space_when_prSinting_symbol = False
+        self._add_space_between_symbols = False
 
     def eval(self, env=None):
         return self.left.eval(env) * self.right.eval(env)
@@ -192,7 +192,7 @@ class Div(BinaryOperation):
 
     def __init__(self, left: Expression, right: Expression):
         super(Div, self).__init__(left, right)
-        self._space_when_printing_symbol = False
+        self._add_space_between_symbols = False
 
     def eval(self, env=None):
         if self.right.is_zero(env):
@@ -242,7 +242,11 @@ def expr(string: str, allow_variables: bool = False) -> Expression:
         (Mult._SYMBOL, Mult),
         (Div._SYMBOL, Div)
         ])
-    expression = string if string.rstrip()[0] != Sub._SYMBOL else '0 ' + string.rstrip()
+    string = string.strip()
+    if string == '':
+        raise ValueError(f'Invalid input type for expression: {string}')
+    else:
+        expression = string if string[0] != Sub._SYMBOL else '0 ' + string
     for symbol in EXPRESSIONS.keys():
         if symbol in expression:
             left, *right = expression.split(symbol)
