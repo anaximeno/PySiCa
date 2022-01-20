@@ -152,7 +152,8 @@ class Automata:
         for char in sentence.strip():
             if isinstance(result := self._read(char), Rejection):
                 return result
-        pop = self.stack.pop()
-        if pop is not None and pop != '$':
-            result = Rejection(pop, 'Syntax Error: Unclosed Parentheses')
+        else:
+            pop = self.stack.pop()
+            if pop is not None and pop != '$':
+                result = Rejection(pop, 'Syntax Error: Unclosed Parentheses')
         return result
