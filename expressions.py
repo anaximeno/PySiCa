@@ -1,13 +1,6 @@
 import math
 
 
-# TODO: add option to turn with vars expressions into a equation,
-#       and operate over it. Could do things like:
-#             -> turn into a function of n vars and, test solutions for n = k, for k in Real set
-#             -> Solve it if it is a quadratic or a linear equation 
-#             -> Store the previous calculation on a stack or list - The better option - The better option!
-
-
 class Expression(object):
     _IS_VARIABLE: bool
 
