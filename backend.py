@@ -1,5 +1,18 @@
+from collections import deque
+import string
+
+
+class Stack(object):
+
+    def push(self, value):
+        pass
+
+    def pop(self):
+        pass
+
+
 class Expression(object):
-    SUPPORTED_EXPRESSIONS = ('+', '-', '*', '/', '(', ')')
+    SYMBOLS = {'+', '-', 'x', '/'}
 
     def eval(env: dict = None):
         pass
@@ -17,17 +30,22 @@ class Expression(object):
     def is_variable(self) -> bool:
         pass
 
+
 class SingleExpression(Expression):
     pass
+
 
 class Var(SingleExpression):
     pass
 
+
 class Const(SingleExpression):
     pass
 
+
 class BinaryOperation(Expression):
     SYMBOL: str
+
     def __init__(self, left: Expression, right: Expression) -> None:
         super(BinaryOperation, self).__init__()
         self._left = left
@@ -36,7 +54,7 @@ class BinaryOperation(Expression):
     @property
     def left(self):
         return self._left
-    
+
     @property
     def right(self):
         return self._right
@@ -44,17 +62,80 @@ class BinaryOperation(Expression):
     def is_variable(self) -> bool:
         return self._left.is_variable or self._right.is_variable
 
+
 class Add(BinaryOperation):
     pass
+
 
 class Sub(BinaryOperation):
     pass
 
+
 class Mult(BinaryOperation):
     pass
+
 
 class Div(BinaryOperation):
     pass
 
-def parser(string: str) -> Expression:
+
+class AutomataResult:
+    
+    def __init__(self, word: str) -> None:
+        self._word = word
+
+    @property
+    def word(self):
+        return self._word
+
+
+class Acception(AutomataResult):
     pass
+
+
+class Rejection(AutomataResult):
+    
+    def __init__(self, word: str, why: str) -> None:
+        super(Rejection, self).__init__(word)
+        self._reason = why
+
+    @property
+    def why(self):
+        return self._reason
+
+
+class Automata:
+
+    def __init__(self) -> None:
+        self.stack = Stack()
+        self.stack.push('$')
+        self._left_parentheses = '('
+        self._right_parentheses = ')'
+        self.stack_alphabet = {
+            self._left_parentheses,
+            self._right_parentheses
+        }
+        self.alphabet = Expression.SYMBOLS.union(
+            string.digits + ' '
+        )
+
+    def _read(self, word: str) -> AutomataResult:
+        if word in self.alphabet:
+            return Acception(word)
+        elif word in self.stack_alphabet:            
+            if word == self._left_parentheses:
+                self.stack.push(word)
+                return Acception(word)
+            else:
+                pop = self.stack.pop()
+                return Acception(word) if pop == self._left_parentheses          \
+                         else Rejection(word, 'Syntax Error: Unclosed Parentheses.')
+        else:
+            return Rejection(word, 'Syntax Error: Word not Recognized.')
+
+    def analyze(self, sentence: str) -> AutomataResult:
+        result = Rejection('', 'Syntax Error: Empty Value.')
+        for char in sentence.strip():
+            if isinstance(result := self._read(char), Rejection):
+                return result
+        return result
