@@ -121,19 +121,24 @@ class Acception(AutomataResult):
 
 class Rejection(AutomataResult):
     
-    def __init__(self, word: str, why: str) -> None:
+    def __init__(self, word: str, index: int, why: str) -> None:
         super(Rejection, self).__init__(word)
         self._reason = why
+        self._idx = index
     
     def __str__(self) -> str:
         return f'Rejection [word = {self._word!a}]'
 
     def __repr__(self) -> str:
-        return f'{self.__str__()} -> {self._reason}'
+        return f'{self.__str__()} [index = {self._idx}] -> {self._reason}'
 
     @property
     def why(self):
         return self._reason
+    
+    @property
+    def index(self):
+        return self._idx
 
 
 class Automata:
@@ -141,37 +146,35 @@ class Automata:
     def __init__(self) -> None:
         self.stack = Stack()
         self.stack.push('$')
-        self._left_parentheses = '('
-        self._right_parentheses = ')'
-        self.stack_alphabet = {
-            self._left_parentheses,
-            self._right_parentheses
-        }
-        self.alphabet = Expression.SYMBOLS.union(
-            string.digits + '. '
-        )
+        self._parentheses_left = '('
+        self._parentheses_right = ')'
+        self._alphabet_subset_01 = { self._parentheses_left, self._parentheses_right }
+        self._alphabet_subset_02 = Expression.SYMBOLS.union(string.digits + '. ')
+        self.alphabet = self._alphabet_subset_01.union(self._alphabet_subset_02)
 
-    def _read(self, word: str) -> AutomataResult:
+    def _read(self, word: str, index: int) -> AutomataResult:
         if word in self.alphabet:
-            return Acception(word)
-        elif word in self.stack_alphabet:            
-            if word == self._left_parentheses:
-                self.stack.push(word)
+            if word == self._parentheses_left:
+                self.stack.push((self._parentheses_left, index))
                 return Acception(word)
-            else:
+            elif word == self._parentheses_right:
                 pop = self.stack.pop()
-                return Acception(word) if pop == self._left_parentheses          \
-                         else Rejection(word, 'Syntax Error: Unclosed Parentheses.')
+                if pop is not None and pop != '$':
+                    return Acception(word)
+                else:
+                    return Rejection(word, index, 'Syntax Error: Unclosed Parentheses.')
+            else:
+                return Acception(word)
         else:
-            return Rejection(word, 'Syntax Error: Word not Recognized.')
+            return Rejection(word, index, 'Syntax Error: Word not Recognized!')
 
     def analyze(self, sentence: str) -> AutomataResult:
-        result = Rejection('', 'Syntax Error: Empty Value.')
-        for char in sentence.strip():
-            if isinstance(result := self._read(char), Rejection):
+        if sentence.strip() == '':
+            return Rejection('', 0, 'Syntax Error: Empty Value.')
+        for idx, char in enumerate(sentence.strip()):
+            if isinstance(result := self._read(char, idx), Rejection):
                 return result
-        else:
-            pop = self.stack.pop()
-            if pop is not None and pop != '$':
-                result = Rejection(pop, 'Syntax Error: Unclosed Parentheses')
-        return result
+        pop = self.stack.pop()
+        if pop is not None and pop != '$':
+            return Rejection(*pop, 'Syntax Error: Unclosed Parentheses')
+        return Acception(char)
