@@ -25,6 +25,7 @@ class Stack(object):
     def top(self):
         return self._top
 
+
 class Expression(object):
     SYMBOLS = {'+', '-', 'x', '/'}
 
@@ -45,25 +46,49 @@ class Expression(object):
         pass
 
 
-class SingleExpression(Expression):
+class UnaryExpression(Expression):
     pass
 
 
-class Var(SingleExpression):
+class Var(UnaryExpression):
     pass
 
 
-class Const(SingleExpression):
+class Const(UnaryExpression):
+    
+    def __init__(self, value) -> None:
+        self._val = eval(value)
+        super().__init__()
+    
+    def __str__(self) -> str:
+        return str(self._val)
+    
+    def __repr__(self) -> str:
+        return self.__str__()
+    
+    @property
+    def value(self):
+        return self._val
+
+
+class Parentheses(UnaryExpression):
     pass
 
 
 class BinaryOperation(Expression):
     SYMBOL: str
+    NAME: str
 
     def __init__(self, left: Expression, right: Expression) -> None:
         super(BinaryOperation, self).__init__()
         self._left = left
         self._right = right
+    
+    def __str__(self) -> str:
+        return f'{str(self.left)} {self.SYMBOL} {self.right}'
+    
+    def __repr__(self) -> str:
+        return f'{self.NAME}({self.left.__repr__()}, {self.right.__repr__()})'
     
     @property
     def left(self):
@@ -79,18 +104,26 @@ class BinaryOperation(Expression):
 
 
 class Add(BinaryOperation):
+    NAME = 'Add'
+    SYMBOL = '+'
     pass
 
 
 class Sub(BinaryOperation):
+    NAME = 'Sub'
+    SYMBOL = '-'
     pass
 
 
 class Mult(BinaryOperation):
+    NAME = 'Mult'
+    SYMBOL = 'x'
     pass
 
 
 class Div(BinaryOperation):
+    NAME = 'Div'
+    SYMBOL = '/'
     pass
 
 
@@ -142,6 +175,12 @@ class Rejection(AutomataResult):
 
 
 class Automata:
+    OPERATIONS = dict([
+        (Add.SYMBOL, Add),
+        (Sub.SYMBOL, Sub),
+        (Mult.SYMBOL, Mult),
+        (Div.SYMBOL, Div)
+    ])
 
     def __init__(self) -> None:
         self.stack = Stack()
@@ -168,7 +207,7 @@ class Automata:
         else:
             return Rejection(word, index, 'Syntax Error: Word not Recognized!')
 
-    def analyze(self, sentence: str) -> AutomataResult:
+    def analyze(self, sentence: str):
         if sentence.strip() == '':
             return Rejection('', 0, 'Syntax Error: Empty Value.')
         for idx, char in enumerate(sentence.strip()):
@@ -178,3 +217,34 @@ class Automata:
         if pop is not None and pop != '$':
             return Rejection(*pop, 'Syntax Error: Unclosed Parentheses')
         return Acception(char)
+
+    def parse(self, sentence: str):
+        if isinstance(res := self.analyze(sentence), Rejection):
+            return res
+        else: # If Acception is received the sentence can be parsed
+            return self._parse_expression(sentence.strip())
+
+    def _parse_expression(self, sentence: str) -> Expression:
+        sent_expr = sentence
+        if sent_expr[0] == Sub.SYMBOL:
+            sent_expr = '0 ' + sent_expr
+        for symbol in self.OPERATIONS.keys():
+            if symbol in sent_expr:
+                left, *right = sent_expr.split(symbol)
+                if symbol == Sub.SYMBOL:
+                    new_right_sent_expr = Add.SYMBOL.join(right)
+                else:
+                    new_right_sent_expr = symbol.join(right)
+                return self.OPERATIONS[symbol](
+                    self._parse_expression(left.strip()),
+                    self._parse_expression(new_right_sent_expr.strip())
+                )
+        else:
+            return self._get_expression_object(sentence)
+
+    def _get_expression_object(self, word) -> UnaryExpression:
+        if isinstance(word, Expression):
+            return word
+        else:
+            return Const(word)
+
