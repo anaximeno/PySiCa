@@ -1,4 +1,4 @@
-***Note: On Update, whatch the develop branch***
+***Note: On Update, watch the develop branch***
 ## Python Simple Calculator - PySiCa
 
 This is a basic idea of a calculator made in python, it could be the backend of a real calculator software.
