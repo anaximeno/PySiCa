@@ -41,8 +41,7 @@ class Expression(object):
     def __eq__(self, __o: object) -> bool:
         return super().__eq__(__o)
     
-    @property
-    def is_variable(self) -> bool:
+    def eval(self, env = None):
         pass
 
 
@@ -57,22 +56,43 @@ class Var(UnaryExpression):
 class Const(UnaryExpression):
     
     def __init__(self, value) -> None:
-        self._val = eval(value)
+        assert isinstance(value, (str, int, float)), 'Value must be type string, int or float'
+        self._val =  eval(value) if isinstance(value, str) else value
         super().__init__()
-    
+
     def __str__(self) -> str:
-        return str(self._val)
-    
+        return str(self.value)
+
     def __repr__(self) -> str:
         return self.__str__()
     
     @property
     def value(self):
         return self._val
+    
+    def eval(self, env=None):
+        return self.value
 
 
 class Parentheses(UnaryExpression):
-    pass
+    NAME = 'Par'
+    SYMBOL = '(%s)'
+    
+    def __init__(self, content: Expression):
+        self._cont = content
+    
+    def __str__(self) -> str:
+        return self.SYMBOL % str(self.content)
+    
+    def __repr__(self) -> str:
+        return f'{self.NAME}({repr(self.content)})'
+
+    @property
+    def content(self):
+        return self._cont
+    
+    def eval(self, env = None):
+        return self._cont.eval(env)
 
 
 class BinaryOperation(Expression):
@@ -81,15 +101,16 @@ class BinaryOperation(Expression):
 
     def __init__(self, left: Expression, right: Expression) -> None:
         super(BinaryOperation, self).__init__()
-        self._left = left
-        self._right = right
-    
+        self._left = left if isinstance(left, Expression) else Const(left)
+        self._right = right if isinstance(right, Expression) else Const(right)
+        self._parentheses = False # TODO: use this instead of the class
+
     def __str__(self) -> str:
         return f'{str(self.left)} {self.SYMBOL} {self.right}'
-    
+
     def __repr__(self) -> str:
-        return f'{self.NAME}({self.left.__repr__()}, {self.right.__repr__()})'
-    
+        return f'{self.NAME}({repr(self.left)}, {repr(self.right)})'
+
     @property
     def left(self):
         return self._left
@@ -98,33 +119,41 @@ class BinaryOperation(Expression):
     def right(self):
         return self._right
 
-    @property
-    def is_variable(self) -> bool:
-        return self._left.is_variable or self._right.is_variable
-
 
 class Add(BinaryOperation):
     NAME = 'Add'
     SYMBOL = '+'
-    pass
+    
+    def eval(self, env=None):
+        return self.left.eval(env) + self.right.eval(env)
 
 
 class Sub(BinaryOperation):
     NAME = 'Sub'
     SYMBOL = '-'
-    pass
+    
+    def eval(self, env=None):
+        return self.left.eval(env) - self.right.eval(env)
 
 
 class Mult(BinaryOperation):
     NAME = 'Mult'
     SYMBOL = 'x'
-    pass
+    
+    def eval(self, env=None):
+        return self.left.eval(env) * self.right.eval(env)
 
 
 class Div(BinaryOperation):
     NAME = 'Div'
     SYMBOL = '/'
-    pass
+    
+    def eval(self, env=None):
+        n = self.left.eval(env)
+        d = self.right.eval(env)
+        if d == 0: # TODO: check and improve this condition
+            return ZeroDivisionError(f'Error Dividing {str(self.left)} by {str(self.right)}')
+        return n / d
 
 
 class AutomataResult:
