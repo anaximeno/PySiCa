@@ -73,6 +73,7 @@ class BinaryOperation(Expression):
     def right(self):
         return self._right
 
+    @property
     def is_variable(self) -> bool:
         return self._left.is_variable or self._right.is_variable
 
@@ -97,6 +98,12 @@ class AutomataResult:
     
     def __init__(self, word: str) -> None:
         self._word = word
+    
+    def __str__(self) -> str:
+        pass
+
+    def __repr__(self) -> str:
+        pass
 
     @property
     def word(self):
@@ -104,7 +111,12 @@ class AutomataResult:
 
 
 class Acception(AutomataResult):
-    pass
+    
+    def __str__(self) -> str:
+        return f'Acception [word = {self._word!a}]'
+    
+    def __repr__(self) -> str:
+        return self.__str__()
 
 
 class Rejection(AutomataResult):
@@ -112,6 +124,12 @@ class Rejection(AutomataResult):
     def __init__(self, word: str, why: str) -> None:
         super(Rejection, self).__init__(word)
         self._reason = why
+    
+    def __str__(self) -> str:
+        return f'Rejection [word = {self._word!a}]'
+
+    def __repr__(self) -> str:
+        return f'{self.__str__()} -> {self._reason}'
 
     @property
     def why(self):
