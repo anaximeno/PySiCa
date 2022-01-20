@@ -4,8 +4,8 @@ import string
 
 class Stack(object):
 
-    def __init__(self, limit: int = None):
-        self._block = deque(limit)
+    def __init__(self):
+        self._block = deque()
 
     def push(self, value):
         self._block.append(value)
