@@ -4,11 +4,18 @@ import string
 
 class Stack(object):
 
+    def __init__(self, limit: int = None):
+        self._block = deque(limit)
+
     def push(self, value):
-        pass
+        self._block.append(value)
 
     def pop(self):
-        pass
+        try:
+            pop = self._block.pop()
+        except IndexError:
+            pop = None
+        return pop
 
 
 class Expression(object):
