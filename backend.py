@@ -5,18 +5,25 @@ import string
 class Stack(object):
 
     def __init__(self):
+        self._top = 0
         self._block = deque()
 
     def push(self, value):
+        self._top += 1
         self._block.append(value)
 
     def pop(self):
         try:
+            self._top -= 1
             pop = self._block.pop()
         except IndexError:
             pop = None
+            self._top = 0
         return pop
 
+    @property
+    def top(self):
+        return self._top
 
 class Expression(object):
     SYMBOLS = {'+', '-', 'x', '/'}
