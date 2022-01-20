@@ -130,7 +130,7 @@ class Automata:
             self._right_parentheses
         }
         self.alphabet = Expression.SYMBOLS.union(
-            string.digits + ' '
+            string.digits + '. '
         )
 
     def _read(self, word: str) -> AutomataResult:
@@ -152,4 +152,7 @@ class Automata:
         for char in sentence.strip():
             if isinstance(result := self._read(char), Rejection):
                 return result
+        pop = self.stack.pop()
+        if pop is not None and pop != '$':
+            result = Rejection(pop, 'Syntax Error: Unclosed Parentheses')
         return result
