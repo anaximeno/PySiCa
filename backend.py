@@ -44,10 +44,12 @@ class Queue(object): # TODO: add peek
         return self._lenght
     
     def enqueue(self, value):
+        """Add one more element to the queue"""
         self._lenght += 1
         self._block.append(value)
     
     def dequeue(self):
+        """Removes and return the first element on the list"""
         try:
             self._lenght -= 1
             deq = self._block.popleft()
@@ -56,12 +58,22 @@ class Queue(object): # TODO: add peek
             deq = None
         return deq
     
-    def peek(self):
+    def peek(self, index: int = 0):
+        """Return the first element, without dequeuing it."""
         try:
-            p = self._block[0]
+            p = self._block[index]
         except IndexError:
             p = None
         return p
+
+    def listAll(self) -> list:
+        """Return all the elements by order, without dequeuing any of them"""
+        assert self.lenght > 0, 'Error: lenght must be greater than or equal to zero!'
+        if self.lenght == 0:
+            return []
+        else:
+            return [self.peek(i) for i in range(self.lenght)]
+            
 
 
 class Expression(object):
