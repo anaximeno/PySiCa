@@ -81,7 +81,7 @@ class Queue(object): # TODO: add peek
 
     def listAll(self) -> list:
         """Return all the elements by order, without dequeuing any of them"""
-        assert self.lenght > 0, 'Error: lenght must be greater than or equal to zero!'
+        assert self.lenght >= 0, 'Error: lenght must be greater than or equal to zero!'
         if self.lenght == 0:
             return []
         else:
@@ -248,6 +248,7 @@ class Rejection(AutomataResult):
         return self._idx
 
 
+# TODO: improve automata for different use case, and to recognize possible errors
 class Automata:
     OPERATIONS = dict([
         (Add.SYMBOL, Add),
