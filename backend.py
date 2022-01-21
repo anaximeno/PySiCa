@@ -232,9 +232,7 @@ class Automata:
         self._alphabet_subset_01 = { self._parentheses_left, self._parentheses_right }
         self._alphabet_subset_02 = Expression.SYMBOLS.union(string.digits + '. ')
         self.alphabet = self._alphabet_subset_01.union(self._alphabet_subset_02)
-        self._matched_parentheses_index_stack = Stack()
         self._parentheses_decoder = {}
-        self._parentheses_counter = 0
 
     def _read(self, word: str, index: int) -> AutomataResult:
         """Read a word (or characters) and analyze if it should be `accepted` or `rejected`."""
@@ -245,7 +243,6 @@ class Automata:
             elif word == self._parentheses_right:
                 pop = self._automata_stack.pop()
                 if pop is not None and pop != '$':
-                    self._matched_parentheses_index_stack.push((pop[1], index))
                     return Acception(word)
                 else:
                     return Rejection(word, index, 'Syntax Error: Unclosed Parentheses.')
@@ -279,25 +276,35 @@ class Automata:
                 self._encode_parentheses(sentence.strip())
             )
 
+    def _search_parentheses_index(self, sentence: str):
+        s = Stack()
+        for i, char in enumerate(sentence):
+            if char == self._parentheses_left:
+                s.push(i)
+            elif char == self._parentheses_right:
+                return s.pop(), i
+            else:
+                continue
+        return None
+
     def _encode_parentheses(self, sentence: str) -> str:
         """This function substitutes all parts on the sentence where is a parenthesis
         to an encoded value, which will be used after to decode and parse the expression
         in between the parentheses.
-        """
-        while (par_index := self._matched_parentheses_index_stack.pop()) is not None:
-            l, r = par_index
-            inner_content = sentence[l:r+1]
-            name = f'par{self._parentheses_counter}'        
-            self._parentheses_decoder[name] = inner_content[1:-1]
-            # print(sentence.split(inner_content))
-            # import pdb; pdb.set_trace()
-            sentence = name.join(sentence.split(inner_content)) # TESTING: '5 x (8 - 7 x (4 - 5))'
-            self._parentheses_counter += 1
-        return sentence
+        """    
+        counter = 0
+        new_sentence = sentence
+        while (idx := self._search_parentheses_index(new_sentence)):
+            l, r = idx
+            par = new_sentence[l:r+1]
+            par_id = f'par{counter}'    
+            self._parentheses_decoder[par_id] = par[1:-1]
+            new_sentence = par_id.join(new_sentence.split(par))
+            counter += 1
+        return new_sentence
 
     def _parse_expression(self, sentence: str, **kwargs) -> Expression:
         """Inner method for recursively parsing expressions in a sentence."""
-        parentheses: bool = kwargs['parentheses'] if 'parentheses' in kwargs else False
         sent_expr = sentence
         if sent_expr[0] == Sub.SYMBOL:
             sent_expr = '0 ' + sent_expr
@@ -309,9 +316,9 @@ class Automata:
                 else:
                     new_right_sent_expr = symbol.join(right)
                 return self.OPERATIONS[symbol](
-                    self._parse_expression(left.strip()),
-                    self._parse_expression(new_right_sent_expr.strip()),
-                    parentheses = parentheses
+                    left = self._parse_expression(left.strip()),
+                    right = self._parse_expression(new_right_sent_expr.strip()),
+                    parentheses = kwargs['parentheses'] if 'parentheses' in kwargs else False
                 )
         else:
             return self._get_expression_object(sentence)
