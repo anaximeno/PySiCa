@@ -30,7 +30,7 @@ class Stack(object):
 
 
 
-class Queue(object):
+class Queue(object): # TODO: add peek
 
     def __init__(self):
         self._block = deque()
