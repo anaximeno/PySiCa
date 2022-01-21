@@ -7,13 +7,51 @@ from backend import (
 import time
 import sys, os
 import argparse
+import termcolor
 
 
 __version__ = '2.0a'
 
 
+PRETTY_OUTPUT_FORMAT_0 = """
+---------------------------------------
+[0] => """
+
+PRETTY_OUTPUT_FORMAT_1 = """
+[1] %s
+
+---------------------------------------
+[0] => """
+
+PRETTY_OUTPUT_FORMAT_2 = """
+[2] %s
+
+[1] %s
+
+---------------------------------------
+[0] => """
+
+
+PRETTY_OUTPUT_FORMAT_3 = """
+[3] %s
+
+[2] %s
+
+[1] %s
+
+---------------------------------------
+[0] => """
+
+
 class PySiCa(object):
     NAME = "PySiCa"
+
+    OUTPUT_FORMAT = [
+        PRETTY_OUTPUT_FORMAT_0,
+        PRETTY_OUTPUT_FORMAT_1,
+        PRETTY_OUTPUT_FORMAT_2,
+        PRETTY_OUTPUT_FORMAT_3
+    ]
     
     def __init__(self, debug: bool = False) -> None:
         super(PySiCa, self).__init__()
@@ -60,18 +98,37 @@ class PySiCa(object):
             pass
         else:
             while True:
-                user_sentence = input('=> ') # test
+                user_sentence = self._show_output_and_get_input(pretty=True)
                 if user_sentence.lower() == 'q':
                     break
-                response = self.automata.parse(user_sentence)
-                if type(response) is Rejection:
-                    result = response.why
+                res = self.automata.parse(user_sentence)
+                if type(res) is Rejection:
+                    if res.word == '': # Rejection by empty input
+                        continue
+                    formated_user_sentence = ''.join(
+                        [
+                            user_sentence[:res.index],
+                            termcolor.colored(user_sentence[res.index], 'red'),
+                            user_sentence[res.index + 1:]
+                        ]
+                    )
+                    output = f'{formated_user_sentence} -> {res.why}'
                 else:
-                    result = response.eval()
-                output = f'{user_sentence} = {result}'
+                    output = f'{user_sentence} = {res.eval()}'
                 self._queue.enqueue(output)
-                print("Result = ", result, end='\n\n')
+            self.clear()
             self.talk("Looking forward for the next try :)", anim_time=0.025)
+
+    def _show_output_and_get_input(self, pretty: bool = True) -> str:
+        self.clear()
+        if pretty is True:
+            user_input = input(
+                self.OUTPUT_FORMAT[self._queue.lenght] % tuple(self._queue.listAll())
+            )
+        else:
+            user_input = input("=> ")
+        return user_input
+
 
 
 
