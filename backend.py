@@ -55,6 +55,13 @@ class Queue(object): # TODO: add peek
             self._lenght = 0
             deq = None
         return deq
+    
+    def peek(self):
+        try:
+            p = self._block[0]
+        except IndexError:
+            p = None
+        return p
 
 
 class Expression(object):
