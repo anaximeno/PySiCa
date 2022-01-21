@@ -1,44 +1,34 @@
-from stack import Stack
-from expressions import expr
+from backend import (
+    Automata,
+    Rejection
+)
 
 from time import sleep
+import sys, os
 import argparse
 import math
-import sys
-import os
 
 
-__version__ = '1.4'
+__version__ = '2.0a'
 
 
 class PySiCa(object):
-    _NAME: str = 'PySiCa'
-    _VERSION: str = __version__
 
     def __init__(self, args, debug: bool = False) -> None:
         super(PySiCa, self).__init__()
-
         self._args = args
         self._debug = debug
         self._out = sys.stdout
         self._in = sys.stdin
-
-        # TODO: implement a stack to store current position
-        # TODO: instead of stack it may be better ot use a list, or something like it
-        # self._system_stacks = {
-        #     'non_variable_calcs': Stack(limit=None, input_type=str),
-        #     'variable_calcs': Stack(limit=None, input_type=str)
-        # }
+        self.automata = Automata()
+        # TODO: show the results sequentially
+        # TODO: add tests
 
     def __str__(self) -> str:
-        return '{} {}'.format(self.name, self._VERSION)
-
-    @property
-    def name(self):
-        return self._NAME
+        return f'Python Simple Calculator {__version__}'
 
     def enterpoint(self, message: str = "[Click Enter]"):
-        self._out.write(f"{self._NAME}: {message}")
+        self._out.write(f"PySiCa: {message}")
         self._out.flush()
         self._in.read(1)
 
@@ -57,12 +47,12 @@ class PySiCa(object):
         return not self._debug or force
 
     def talk(self, message, animation_time: float = 0.0123 * math.pi) -> None:
-        self.animate(f"{self._NAME}: {message}",
+        self.animate(f"PySiCa: {message}",
                      animation_time * int(not self._debug))
 
-    def run(self):
+    def run(self): # TODO: improve main flow
         PREV_BLOCK = '▯'
-        N_PREV_BLOCKS = 20
+        N_PREV_BLOCKS = 3
         INPUT_PREV_STR = (PREV_BLOCK * N_PREV_BLOCKS) + '\r'
         if self._debug is True:
             self.talk('Debug Mode\n')
@@ -72,48 +62,19 @@ class PySiCa(object):
             sleep(0.5)
             self.clear()
         while True:
-            self.talk("What do you want to do ?\n")
-            print(
-                "  a -> Use the calculator for calcs without vars(e.g. 30 * 3 - 12 / 4 )"
-            )
-            print("  b -> Use the calculator for calcs with vars(e.g. k - k / 4 )")
-            print("  q -> Quit the program")
-            opt = input('\n> ').lower()
-            if opt == 'a':  # Non variable calculations
-                self.clear()
-                entry = input(INPUT_PREV_STR)
-                try:
-                    result = f" = {expr(entry).eval()}\n"
-                except ValueError:
-                    result = " --> Unsupported Expression\n"
-                self.clear()
-                print(entry + result)
-                self.enterpoint()
-            elif opt == 'b':  # Variable calculations
-                # TODO: improve this section
-                self.clear()
-                expression = expr(input(INPUT_PREV_STR))
-                variables = expression.get_variables()
-
-                env = None
-                if any(variables):
-                    print("\nWrite the value of: ")
-                    env = {var: eval(input(f'\t -> {var}: '))
-                           for var in variables}
-                try:
-                    result = f" = {expr(entry).eval()}\n"
-                except ValueError:
-                    result = " --> Unsupported Expression\n"
-                print(f"\n = {result}\n")
-                self.enterpoint()
-            elif opt == 'q':
-                self.clear()
-                self.talk("Looking forward for the next try ;)")
+            self.talk("Write your expression, or 'quit' to leave:")
+            sentence = input(INPUT_PREV_STR)
+            if sentence == 'quit':
                 break
+            res = self.automata.parse(sentence)
+            if type(res) is Rejection:
+                self.talk(res.why, 0)
             else:
-                self.talk("Unknown Option, Try Again!")
-                self.enterpoint()
+                self.talk(f'{res} = {res.eval()}', 0)
+            self.enterpoint()
             self.clear()
+        self.talk("Looking forward for the next try ;)")
+
 
 
 if __name__ == '__main__':
