@@ -29,6 +29,34 @@ class Stack(object):
         return self._top
 
 
+
+class Queue(object):
+
+    def __init__(self):
+        self._block = deque()
+        self._lenght = 0      
+    
+    def __str__(self) -> str:
+        return str(self._block)
+    
+    @property
+    def lenght(self):
+        return self._lenght
+    
+    def enqueue(self, value):
+        self._lenght += 1
+        self._block.append(value)
+    
+    def dequeue(self):
+        try:
+            self._lenght -= 1
+            deq = self._block.popleft()
+        except IndexError:
+            self._lenght = 0
+            deq = None
+        return deq
+
+
 class Expression(object):
     SYMBOLS = {'+', '-', 'x', '/'}
 
