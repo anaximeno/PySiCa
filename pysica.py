@@ -1,87 +1,91 @@
 from backend import (
     Automata,
-    Rejection
+    Rejection,
+    Queue
 )
 
-from time import sleep
+import time
 import sys, os
 import argparse
-import math
 
 
 __version__ = '2.0a'
 
 
 class PySiCa(object):
-
-    def __init__(self, args, debug: bool = False) -> None:
+    NAME = "PySiCa"
+    
+    def __init__(self, debug: bool = False) -> None:
         super(PySiCa, self).__init__()
-        self._args = args
-        self._debug = debug
+        self._debug_mode = debug
         self._out = sys.stdout
         self._in = sys.stdin
         self.automata = Automata()
-        # TODO: show the results sequentially
-        # TODO: add tests
+        self._queue = Queue(3)
 
     def __str__(self) -> str:
-        return f'Python Simple Calculator {__version__}'
+        return f'Python Simple Calculator [{self.NAME}] {__version__}'
 
     def enterpoint(self, message: str = "[Click Enter]"):
-        self._out.write(f"PySiCa: {message}")
+        self._out.write(f"{self.NAME}: {message}")
         self._out.flush()
         self._in.read(1)
 
     def animate(self, string: str, secs: float = 0.05):
+        skip_set = {'\n', '\t', '\a', '\r', '\b'}
         for char in string:
-            if char != '\n' and char != '\t':
-                sleep(secs)
+            if char not in skip_set:
+                time.sleep(secs)
             self._out.write(char)
             self._out.flush()
         print('')
 
     def clear(self, force: bool = False) -> bool:
         """Clear the Console"""
-        if not self._debug or force is True:
+        if not self._debug_mode or force is True:
             os.system('clear')
-        return not self._debug or force
+        return not self._debug_mode or force
 
-    def talk(self, message, animation_time: float = 0.0123 * math.pi) -> None:
-        self.animate(f"PySiCa: {message}",
-                     animation_time * int(not self._debug))
+    def talk(self, message, **kwargs) -> None:
+        anim_time = 0
+        if 'anim_time' in kwargs:
+            anim_time = kwargs['anim_time']
+        self.animate(f"\nPySiCa: {message}", anim_time)
 
-    def run(self): # TODO: improve main flow
-        PREV_BLOCK = '▯'
-        N_PREV_BLOCKS = 3
-        INPUT_PREV_STR = (PREV_BLOCK * N_PREV_BLOCKS) + '\r'
-        if self._debug is True:
-            self.talk('Debug Mode\n')
+    def run(self, tutorial: bool = False):
+        self.talk("Welcome to the [Py]thon [Si]mple [Ca]lculator!", anim_time=0.04)
+        time.sleep(0.5)
+        self.clear()
+        if tutorial is True:
+            pass
         else:
-            self.clear()
-            self.talk("Welcome to the Python Simple Calculator!", 0.02 * math.pi)
-            sleep(0.5)
-            self.clear()
-        while True:
-            self.talk("Write your expression, or 'quit' to leave:")
-            sentence = input(INPUT_PREV_STR)
-            if sentence == 'quit':
-                break
-            res = self.automata.parse(sentence)
-            if type(res) is Rejection:
-                self.talk(res.why, 0)
-            else:
-                self.talk(f'{res} = {res.eval()}', 0)
-            self.enterpoint()
-            self.clear()
-        self.talk("Looking forward for the next try ;)")
+            while True:
+                user_sentence = input('=> ') # test
+                if user_sentence.lower() == 'q':
+                    break
+                response = self.automata.parse(user_sentence)
+                if type(response) is Rejection:
+                    result = response.why
+                else:
+                    result = response.eval()
+                output = f'{user_sentence} = {result}'
+                self._queue.enqueue(output)
+                print("Result = ", result, end='\n\n')
+            self.talk("Looking forward for the next try :)", anim_time=0.025)
 
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser('PySiCa')
-    parser.add_argument("--version", help="Display the version",
-                        action='version', version='%(prog)s {}'.format(__version__))
-    parser.add_argument('-D', '--debug', action='store_true')
-    args = parser.parse_args()
-    app = PySiCa(args, args.debug)
+    argparser = argparse.ArgumentParser('PySiCa')
+
+    argparser.add_argument("--version",
+        help="Display the version",
+        action='version',
+        version='%(prog)s {}'.format(__version__)
+    )
+
+    argparser.add_argument('-D', '--debug', action='store_true')
+
+    args = argparser.parse_args()
+    app = PySiCa(args.debug)
     app.run()
