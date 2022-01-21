@@ -32,9 +32,10 @@ class Stack(object):
 
 class Queue(object): # TODO: add peek
 
-    def __init__(self):
+    def __init__(self, limit: int = None):
         self._block = deque()
-        self._lenght = 0      
+        self._lenght = 0
+        self._lim = limit
     
     def __str__(self) -> str:
         return str(self._block)
@@ -43,11 +44,23 @@ class Queue(object): # TODO: add peek
     def lenght(self):
         return self._lenght
     
+    @property
+    def limit(self):
+        return self._lim
+ 
     def enqueue(self, value):
-        """Add one more element to the queue"""
-        self._lenght += 1
-        self._block.append(value)
-    
+        """Add one more element to the queue.
+        If a limit where specified on the instantiation of the class,
+        when the lenght is equal to the limit, the stack will dequeue
+        the first element and the enqueue the new one.
+        """
+        if self.limit and self.lenght == self.limit:
+            self.dequeue()
+            self.enqueue(value)
+        else:
+            self._lenght += 1
+            self._block.append(value)
+
     def dequeue(self):
         """Removes and return the first element on the list"""
         try:
