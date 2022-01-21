@@ -7,6 +7,9 @@ class Stack(object):
     def __init__(self):
         self._top = 0
         self._block = deque()
+    
+    def __str__(self) -> str:
+        return str(self._block)
 
     def push(self, value):
         self._top += 1
@@ -41,15 +44,12 @@ class Expression(object):
     def __eq__(self, __o: object) -> bool:
         return super().__eq__(__o)
     
-    def eval(self, env = None):
+    def eval(self):
+        """Evaluates and returns the value of the Expression"""
         pass
 
 
 class UnaryExpression(Expression):
-    pass
-
-
-class Var(UnaryExpression):
     pass
 
 
@@ -70,43 +70,26 @@ class Const(UnaryExpression):
     def value(self):
         return self._val
     
-    def eval(self, env=None):
+    def eval(self):
         return self.value
-
-
-class Parentheses(UnaryExpression):
-    NAME = 'Par'
-    SYMBOL = '(%s)'
-    
-    def __init__(self, content: Expression):
-        self._cont = content
-    
-    def __str__(self) -> str:
-        return self.SYMBOL % str(self.content)
-    
-    def __repr__(self) -> str:
-        return f'{self.NAME}({repr(self.content)})'
-
-    @property
-    def content(self):
-        return self._cont
-    
-    def eval(self, env = None):
-        return self._cont.eval(env)
 
 
 class BinaryOperation(Expression):
     SYMBOL: str
     NAME: str
 
-    def __init__(self, left: Expression, right: Expression) -> None:
+    def __init__(self, left: Expression, right: Expression, **kwargs) -> None:
         super(BinaryOperation, self).__init__()
         self._left = left if isinstance(left, Expression) else Const(left)
         self._right = right if isinstance(right, Expression) else Const(right)
-        self._parentheses = False # TODO: use this instead of the class
+        self._parentheses: bool = kwargs['parentheses'] if 'parentheses' in kwargs else False
 
     def __str__(self) -> str:
-        return f'{str(self.left)} {self.SYMBOL} {self.right}'
+        out = f'{str(self.left)} {self.SYMBOL} {self.right}'
+        PAR = '(%s)'
+        if self._parentheses is True:
+            return PAR % out
+        return out
 
     def __repr__(self) -> str:
         return f'{self.NAME}({repr(self.left)}, {repr(self.right)})'
@@ -124,33 +107,33 @@ class Add(BinaryOperation):
     NAME = 'Add'
     SYMBOL = '+'
     
-    def eval(self, env=None):
-        return self.left.eval(env) + self.right.eval(env)
+    def eval(self):
+        return self.left.eval() + self.right.eval()
 
 
 class Sub(BinaryOperation):
     NAME = 'Sub'
     SYMBOL = '-'
     
-    def eval(self, env=None):
-        return self.left.eval(env) - self.right.eval(env)
+    def eval(self):
+        return self.left.eval() - self.right.eval()
 
 
 class Mult(BinaryOperation):
     NAME = 'Mult'
     SYMBOL = 'x'
     
-    def eval(self, env=None):
-        return self.left.eval(env) * self.right.eval(env)
+    def eval(self):
+        return self.left.eval() * self.right.eval()
 
 
 class Div(BinaryOperation):
     NAME = 'Div'
     SYMBOL = '/'
     
-    def eval(self, env=None):
-        n = self.left.eval(env)
-        d = self.right.eval(env)
+    def eval(self):
+        n = self.left.eval()
+        d = self.right.eval()
         if d == 0: # TODO: check and improve this condition
             return ZeroDivisionError(f'Error Dividing {str(self.left)} by {str(self.right)}')
         return n / d
@@ -196,10 +179,12 @@ class Rejection(AutomataResult):
 
     @property
     def why(self):
+        """The reason of the rejection of the word."""
         return self._reason
     
     @property
     def index(self):
+        """The index of the rejected word in the sentence."""
         return self._idx
 
 
@@ -212,22 +197,27 @@ class Automata:
     ])
 
     def __init__(self) -> None:
-        self.stack = Stack()
-        self.stack.push('$')
+        self._automata_stack = Stack()
+        self._automata_stack.push('$')
         self._parentheses_left = '('
         self._parentheses_right = ')'
         self._alphabet_subset_01 = { self._parentheses_left, self._parentheses_right }
         self._alphabet_subset_02 = Expression.SYMBOLS.union(string.digits + '. ')
         self.alphabet = self._alphabet_subset_01.union(self._alphabet_subset_02)
+        self._matched_parentheses_index_stack = Stack()
+        self._parentheses_decoder = {}
+        self._parentheses_counter = 0
 
     def _read(self, word: str, index: int) -> AutomataResult:
+        """Read a word (or characters) and analyze if it should be `accepted` or `rejected`."""
         if word in self.alphabet:
             if word == self._parentheses_left:
-                self.stack.push((self._parentheses_left, index))
+                self._automata_stack.push((self._parentheses_left, index))
                 return Acception(word)
             elif word == self._parentheses_right:
-                pop = self.stack.pop()
+                pop = self._automata_stack.pop()
                 if pop is not None and pop != '$':
+                    self._matched_parentheses_index_stack.push((pop[1], index))
                     return Acception(word)
                 else:
                     return Rejection(word, index, 'Syntax Error: Unclosed Parentheses.')
@@ -237,23 +227,49 @@ class Automata:
             return Rejection(word, index, 'Syntax Error: Word not Recognized!')
 
     def analyze(self, sentence: str):
+        """Analyzes the sentence and if the respects the rules of the grammar of this
+        automata it will return a `Acception` object, else a `Rejection` will be returned.
+        """
         if sentence.strip() == '':
             return Rejection('', 0, 'Syntax Error: Empty Value.')
         for idx, char in enumerate(sentence.strip()):
             if isinstance(result := self._read(char, idx), Rejection):
                 return result
-        pop = self.stack.pop()
+        pop = self._automata_stack.pop()
         if pop is not None and pop != '$':
             return Rejection(*pop, 'Syntax Error: Unclosed Parentheses')
         return Acception(char)
 
     def parse(self, sentence: str):
+        """Parses the sentence and returns the respective `Expression` object if all characters (words)
+        of the sentence respect the gramatical rules of the automata, else it'll return a `Rejection` object.
+        """
         if isinstance(res := self.analyze(sentence), Rejection):
             return res
-        else: # If Acception is received the sentence can be parsed
-            return self._parse_expression(sentence.strip())
+        else: # If Acception then parse it
+            return self._parse_expression(
+                self._encode_parentheses(sentence.strip())
+            )
 
-    def _parse_expression(self, sentence: str) -> Expression:
+    def _encode_parentheses(self, sentence: str) -> str:
+        """This function substitutes all parts on the sentence where is a parenthesis
+        to an encoded value, which will be used after to decode and parse the expression
+        in between the parentheses.
+        """
+        while (par_index := self._matched_parentheses_index_stack.pop()) is not None:
+            l, r = par_index
+            inner_content = sentence[l:r+1]
+            name = f'par{self._parentheses_counter}'        
+            self._parentheses_decoder[name] = inner_content[1:-1]
+            # print(sentence.split(inner_content))
+            # import pdb; pdb.set_trace()
+            sentence = name.join(sentence.split(inner_content)) # TESTING: '5 x (8 - 7 x (4 - 5))'
+            self._parentheses_counter += 1
+        return sentence
+
+    def _parse_expression(self, sentence: str, **kwargs) -> Expression:
+        """Inner method for recursively parsing expressions in a sentence."""
+        parentheses: bool = kwargs['parentheses'] if 'parentheses' in kwargs else False
         sent_expr = sentence
         if sent_expr[0] == Sub.SYMBOL:
             sent_expr = '0 ' + sent_expr
@@ -266,14 +282,21 @@ class Automata:
                     new_right_sent_expr = symbol.join(right)
                 return self.OPERATIONS[symbol](
                     self._parse_expression(left.strip()),
-                    self._parse_expression(new_right_sent_expr.strip())
+                    self._parse_expression(new_right_sent_expr.strip()),
+                    parentheses = parentheses
                 )
         else:
             return self._get_expression_object(sentence)
 
-    def _get_expression_object(self, word) -> UnaryExpression:
+    def _get_expression_object(self, word) -> Expression:
+        """Return the respective Expression for each type of word."""
         if isinstance(word, Expression):
             return word
+        elif word in self._parentheses_decoder:
+            return self._parse_expression(
+                self._parentheses_decoder[word],
+                parentheses=True
+            )
         else:
             return Const(word)
 
