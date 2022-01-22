@@ -10,7 +10,7 @@ import argparse
 import termcolor
 
 
-__version__ = '2.0a'
+__version__ = '2.0.1-beta'
 
 
 PRETTY_OUTPUT_FORMAT_0 = """
@@ -30,7 +30,6 @@ PRETTY_OUTPUT_FORMAT_2 = """
 
 ---------------------------------------
 [0] => """
-
 
 PRETTY_OUTPUT_FORMAT_3 = """
 [3] %s
@@ -52,7 +51,7 @@ class PySiCa(object):
         PRETTY_OUTPUT_FORMAT_2,
         PRETTY_OUTPUT_FORMAT_3
     ]
-    
+
     def __init__(self, debug: bool = False) -> None:
         super(PySiCa, self).__init__()
         self._debug_mode = debug
@@ -95,22 +94,22 @@ class PySiCa(object):
         time.sleep(0.5)
         self.clear()
         if tutorial is True:
-            pass
+            pass # TODO: create the tutorial section
         else:
             while True:
                 user_sentence = self._show_output_and_get_input(pretty=True)
-                if user_sentence.lower() == 'q':
+                if user_sentence.lower().strip() == 'q':
                     break
                 res = self.automata.parse(user_sentence)
                 if type(res) is Rejection:
                     if res.word == '': # Rejection by empty input
-                        continue
+                        continue       # Ignore
                     formated_user_sentence = ''.join(
-                        [
+                        (
                             user_sentence[:res.index],
-                            termcolor.colored(user_sentence[res.index], 'red'),
+                            termcolor.colored(res.word, 'red'),
                             user_sentence[res.index + 1:]
-                        ]
+                        )
                     )
                     output = f'{formated_user_sentence} -> {res.why}'
                 else:
@@ -133,7 +132,7 @@ class PySiCa(object):
 
 
 if __name__ == '__main__':
-    argparser = argparse.ArgumentParser('PySiCa')
+    argparser = argparse.ArgumentParser(PySiCa.NAME)
 
     argparser.add_argument("--version",
         help="Display the version",
