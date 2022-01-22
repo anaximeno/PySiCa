@@ -6,19 +6,19 @@ class Stack(object):
 
     def __init__(self):
         self._top = 0
-        self._block = deque()
+        self._deque = deque()
     
     def __str__(self) -> str:
-        return str(self._block)
+        return str(self._deque)
 
     def push(self, value):
         self._top += 1
-        self._block.append(value)
+        self._deque.append(value)
 
     def pop(self):
         try:
             self._top -= 1
-            pop = self._block.pop()
+            pop = self._deque.pop()
         except IndexError:
             pop = None
             self._top = 0
@@ -30,31 +30,63 @@ class Stack(object):
 
 
 
-class Queue(object): # TODO: add peek
+class Queue(object):
 
-    def __init__(self):
-        self._block = deque()
-        self._lenght = 0      
-    
+    def __init__(self, limit: int = None):
+        self._deque = deque()
+        self._lenght = 0
+        self._lim = limit
+
     def __str__(self) -> str:
-        return str(self._block)
+        return str(self._deque)
     
     @property
     def lenght(self):
         return self._lenght
     
+    @property
+    def limit(self):
+        return self._lim
+ 
     def enqueue(self, value):
-        self._lenght += 1
-        self._block.append(value)
-    
+        """Add one more element to the queue.
+        If a limit where specified on the instantiation of the class,
+        when the lenght is equal to the limit, the stack will dequeue
+        the first element and the enqueue the new one.
+        """
+        if self.limit and self.lenght == self.limit:
+            self.dequeue()
+            self.enqueue(value)
+        else:
+            self._lenght += 1
+            self._deque.append(value)
+
     def dequeue(self):
+        """Removes and return the first element on the list"""
         try:
             self._lenght -= 1
-            deq = self._block.popleft()
+            deq = self._deque.popleft()
         except IndexError:
             self._lenght = 0
             deq = None
         return deq
+    
+    def peek(self, index: int = 0):
+        """Return the `index` element (default = 0, first), without dequeueing it."""
+        try:
+            p = self._deque[index]
+        except IndexError:
+            p = None
+        return p
+
+    def listAll(self) -> list:
+        """Return all the elements by order, without dequeueing any of them"""
+        assert self.lenght >= 0, 'Error: lenght must be greater than or equal to zero!'
+        if self.lenght == 0:
+            return []
+        else:
+            return [self.peek(i) for i in range(self.lenght)]
+            
 
 
 class Expression(object):
@@ -216,6 +248,7 @@ class Rejection(AutomataResult):
         return self._idx
 
 
+# TODO: improve automata for different use case, and to recognize possible errors
 class Automata:
     OPERATIONS = dict([
         (Add.SYMBOL, Add),
@@ -305,8 +338,8 @@ class Automata:
 
     def _parse_expression(self, sentence: str, **kwargs) -> Expression:
         """Inner method for recursively parsing expressions in a sentence."""
-        sent_expr = sentence
-        if sent_expr[0] == Sub.SYMBOL:
+        sent_expr = sentence.strip()
+        if sent_expr[0] in {Sub.SYMBOL, Add.SYMBOL}:
             sent_expr = '0 ' + sent_expr
         for symbol in self.OPERATIONS.keys():
             if symbol in sent_expr:
@@ -329,7 +362,7 @@ class Automata:
             return word
         elif word in self._parentheses_decoder:
             return self._parse_expression(
-                self._parentheses_decoder[word],
+                self._parentheses_decoder[word].strip(),
                 parentheses=True
             )
         else:
