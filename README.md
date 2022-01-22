@@ -1,9 +1,9 @@
 ## Python Simple Calculator - PySiCa
 
-<img width=600 height=400 src="images/pysica_black.png">
+<img src="images/pysica_black.png">
 
 
-This is a basic calculator made in python.
+A basic calculator made in python.
 
 ### Requirements
 It requires only one external python package named termcolor which could be installed using:
