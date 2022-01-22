@@ -79,7 +79,7 @@ class Queue(object):
             p = None
         return p
 
-    def listAll(self) -> list:
+    def list_all(self) -> list:
         """Return all the elements by order, without dequeueing any of them"""
         assert self.lenght >= 0, 'Error: lenght must be greater than or equal to zero!'
         if self.lenght == 0:

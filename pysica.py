@@ -122,7 +122,7 @@ class PySiCa(object):
         self.clear()
         if pretty is True:
             user_input = input(
-                self.OUTPUT_FORMAT[self._queue.lenght] % tuple(self._queue.listAll())
+                self.OUTPUT_FORMAT[self._queue.lenght] % tuple(self._queue.list_all())
             )
         else:
             user_input = input("=> ")
