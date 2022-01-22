@@ -350,7 +350,7 @@ class Automata:
                     new_right_sent_expr = symbol.join(right)
                 return self.OPERATIONS[symbol](
                     left = self._parse_expression(left.strip()),
-                    right = self._parse_expression(new_right_sent_expr.strip()),
+                    right = self._parse_expression(new_right_sent_expr.strip(), parentheses=bool(symbol == Sub.SYMBOL)),
                     parentheses = kwargs['parentheses'] if 'parentheses' in kwargs else False
                 )
         else:
