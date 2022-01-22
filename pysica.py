@@ -13,7 +13,9 @@ import termcolor
 __version__ = '2.0.1-beta'
 
 
-PRETTY_OUTPUT_FORMAT_0 = """
+PRETTY_OUTPUT_FORMAT_0 = f"""
+ PySiCa {__version__}
+ 
  Write an expression or 'q' to quit.
 
 --------------------------------------
@@ -122,7 +124,7 @@ class PySiCa(object):
                     output = f'{user_sentence} = {res.eval()}'
                 self._queue.enqueue(output)
             self.clear()
-            self.talk("Looking forward for the next try :)", anim_time=0.025)
+            self.talk("hope you liked it :)", anim_time=0.025)
 
     def _show_output_and_get_input(self, pretty: bool = True) -> str:
         self.clear()
