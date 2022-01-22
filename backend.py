@@ -271,7 +271,7 @@ class Automata:
         """Read a word (or characters) and analyze if it should be `accepted` or `rejected`."""
         if word in self.alphabet:
             if word == self._parentheses_left:
-                self._automata_stack.push((self._parentheses_left, index))
+                self._automata_stack.push((word, index))
                 return Acception(word)
             elif word == self._parentheses_right:
                 pop = self._automata_stack.pop()
@@ -303,7 +303,7 @@ class Automata:
         of the sentence respect the gramatical rules of the automata, else it'll return a `Rejection` object.
         """
         if isinstance(res := self.analyze(sentence), Rejection):
-            return res
+            return res # If rejection return
         else: # If Acception then parse it
             return self._parse_expression(
                 self._encode_parentheses(sentence.strip())
