@@ -6,10 +6,10 @@
 A basic calculator made in python.
 
 ### Requirements
-It requires only one external python package named termcolor which could be installed using:
+The requirements could be installed using:
 
 ```bash
-pip install termcolor
+pip install requirements.txt
 ```
 
 ### Running it

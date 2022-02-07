@@ -11,7 +11,7 @@ import argparse
 import termcolor
 
 
-__version__ = '2.0.1-beta'
+__version__ = '2.1.0-beta'
 
 
 PRETTY_OUTPUT_FORMAT_0 = f"""
