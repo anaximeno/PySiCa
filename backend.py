@@ -19,60 +19,58 @@ class Just(Maybe):
     def __init__(self, value):
         super().__init__(value, True)
     
-    def __eq__(self, other):
-        if isinstance(other, Just):
-            return super().__eq__(other)
+    def __eq__(self, obj):
+        if isinstance(obj, Just):
+            return super().__eq__(obj)
         else:
-            if isinstance(other, (int, float)):
-                return self.value == other
+            if isinstance(obj, (int, float)):
+                return self.value == obj
             else: # TODO: analyse this else
                 return False
 
-    def __add__(self, object):
-        if isinstance(object, (int, float)):
-            return Just(self.value + object)
-        elif isinstance(object, Just):
-            return Just(self.value + object.value)
-        elif isinstance(object, Nothing):
-            return object
+    def __add__(self, obj):
+        if isinstance(obj, (int, float)):
+            return Just(self.value + obj)
+        elif isinstance(obj, Just):
+            return Just(self.value + obj.value)
+        elif isinstance(obj, Nothing):
+            return obj
         else:
             return Nothing('Unsupported type operation')
 
-
-    def __sub__(self, object):
-        if isinstance(object, (int, float)):
-            return Just(self.value - object)
-        elif isinstance(object, Just):
-            return Just(self.value - object.value)
-        elif isinstance(object, Nothing):
-            return object
+    def __sub__(self, obj):
+        if isinstance(obj, (int, float)):
+            return Just(self.value - obj)
+        elif isinstance(obj, Just):
+            return Just(self.value - obj.value)
+        elif isinstance(obj, Nothing):
+            return obj
         else:
             return Nothing('Unsupported type operation')
 
-
-    def __truediv__(self, object):
-        if isinstance(object, (int, float)):
-            if object == 0:
+    def __truediv__(self, obj):
+        if isinstance(obj, (int, float)):
+            if obj == 0:
                 return Nothing('Division by zero')
             else:
-                return Just(self.value / object)
-        elif isinstance(object, Just):
-            if object.value == 0:
+                return Just(self.value / obj)
+        elif isinstance(obj, Just):
+            if obj.value == 0:
                 return Nothing('Division by zero')
             else:
-                return Just(self.value / object.value)
-        elif isinstance(object, Nothing):
-            return object
+                return Just(self.value / obj.value)
+        elif isinstance(obj, Nothing):
+            return obj
         else:
             return Nothing('Unsupported type operation')
 
-    def __mul__(self, v):
-        if isinstance(object, (int, float)):
-            return Just(self.value * object)
-        elif isinstance(object, Just):
-            return Just(self.value * object.value)
-        elif isinstance(object, Nothing):
-            return object
+    def __mul__(self, obj):
+        if isinstance(obj, (int, float)):
+            return Just(self.value * obj)
+        elif isinstance(obj, Just):
+            return Just(self.value * obj.value)
+        elif isinstance(obj, Nothing):
+            return obj
         else:
             return Nothing('Unsupported type operation')
 
