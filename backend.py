@@ -26,7 +26,7 @@ class Just(Maybe):
             if isinstance(other, (int, float)):
                 return self.value == other
             else: # TODO: analyse this else
-                raise False
+                return False
 
     def __add__(self, object):
         if isinstance(object, (int, float)):
@@ -36,7 +36,7 @@ class Just(Maybe):
         elif isinstance(object, Nothing):
             return object
         else:
-            raise Nothing('Unsupported type operation')
+            return Nothing('Unsupported type operation')
 
 
     def __sub__(self, object):
@@ -47,7 +47,7 @@ class Just(Maybe):
         elif isinstance(object, Nothing):
             return object
         else:
-            raise Nothing('Unsupported type operation')
+            return Nothing('Unsupported type operation')
 
 
     def __truediv__(self, object):
@@ -64,7 +64,7 @@ class Just(Maybe):
         elif isinstance(object, Nothing):
             return object
         else:
-            raise Nothing('Unsupported type operation')
+            return Nothing('Unsupported type operation')
 
     def __mul__(self, v):
         if isinstance(object, (int, float)):
@@ -74,7 +74,7 @@ class Just(Maybe):
         elif isinstance(object, Nothing):
             return object
         else:
-            raise Nothing('Unsupported type operation')
+            return Nothing('Unsupported type operation')
 
 
 class Stack(object):
