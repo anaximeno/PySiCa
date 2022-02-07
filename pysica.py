@@ -1,7 +1,8 @@
 from backend import (
+    Nothing,
     Automata,
     Rejection,
-    Queue
+    Queue,
 )
 
 import time
@@ -66,7 +67,7 @@ class PySiCa(object):
         self._out = sys.stdout
         self._in = sys.stdin
         self.automata = Automata()
-        self._queue = Queue(3)
+        self.output_queue = Queue(3)
 
     def __str__(self) -> str:
         return f'Python Simple Calculator [{self.NAME}] {__version__}'
@@ -112,36 +113,35 @@ class PySiCa(object):
                 if type(res) is Rejection:
                     if res.word == '': # Rejection by empty input
                         continue       # Ignore
-                    formated_user_sentence = ''.join(
-                        (
+                    formated_user_sentence = ''.join((
                             user_sentence[:res.index],
                             termcolor.colored(res.word, 'red'),
                             user_sentence[res.index + 1:]
-                        )
-                    )
-                    output = f'{formated_user_sentence} -> {res.why}'
+                        ))
+                    output = f'{formated_user_sentence} -> {res.reason}'
                 else:
-                    output = f'{user_sentence} = {res.eval()}'
-                self._queue.enqueue(output)
+                    trueop = res.eval()
+                    if isinstance(trueop, Nothing):
+                        cause = trueop.cause
+                        output = f'{user_sentence} -> {cause if cause else "Internal Operation Error"}'
+                    else:
+                        output = f'{user_sentence} = {trueop.value}'
+                self.output_queue.enqueue(output)
             self.clear()
             self.talk("hope you liked it :)", anim_time=0.025)
 
     def _show_output_and_get_input(self, pretty: bool = True) -> str:
         self.clear()
+        output_format = "=> "
         if pretty is True:
-            user_input = input(
-                self.OUTPUT_FORMAT[self._queue.lenght] % tuple(self._queue.list_all())
-            )
-        else:
-            user_input = input("=> ")
-        return user_input
-
-
+            index = self.output_queue.lenght
+            elements = tuple(self.output_queue.list())
+            output_format = self.OUTPUT_FORMAT[index] % elements
+        return input(output_format)
 
 
 if __name__ == '__main__':
     argparser = argparse.ArgumentParser(PySiCa.NAME)
-
     argparser.add_argument("--version",
         help="Display the version",
         action='version',
