@@ -9,7 +9,7 @@ A basic calculator made in python.
 The requirements could be installed using:
 
 ```bash
-pip install requirements.txt
+pip install -r requirements.txt
 ```
 
 ### Running it
