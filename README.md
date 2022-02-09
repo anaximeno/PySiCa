@@ -6,7 +6,7 @@
 A basic calculator made in python.
 
 ### Requirements
-The requirements could be installed using:
+The requirements can be installed using the following command:
 
 ```bash
 pip install -r requirements.txt
