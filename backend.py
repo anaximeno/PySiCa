@@ -1,4 +1,5 @@
 from collections import deque
+from itertools import count
 from pymonad.maybe import Maybe
 import string
 
@@ -162,7 +163,7 @@ class Queue(object):
 
 
 class Expression(object):
-    SYMBOLS = {'+', '-', 'x', '/'}
+    SYMBOLS = {'+', '-', '*', '/'}
 
     def eval(self) -> Maybe:
         """Evaluates and returns the value of the Expression"""
@@ -240,7 +241,7 @@ class Sub(BinaryOperation):
 
 class Mult(BinaryOperation):
     NAME = 'Mult'
-    SYMBOL = 'x'
+    SYMBOL = '*'
 
     def eval(self) -> Maybe:
         return self.left.eval() * self.right.eval()
