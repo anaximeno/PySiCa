@@ -1,3 +1,4 @@
+from email.generator import Generator
 import string
 
 class Token:
@@ -38,9 +39,8 @@ class ParenthesesToken(Token):
 class UnknownToken(Token):
     TYPE: str = "UNKNOWN"
 
-
 class Scanner:
-    
+
     def __init__(self, sentence: str) -> None:
         self._sentence = sentence
         self._dictionary: dict = {
@@ -62,12 +62,13 @@ class Scanner:
             token = UnknownToken(word=word)
         return token
 
-    def lex(self):
+    def lazy_tokens(self):
+        splitted_sentence = self._sentence.split(' ')
+        for item in splitted_sentence:
+            token = self._tokenize(item)
+            yield token
+
+    def tokens(self) -> list:
         split_sent = self._sentence.split(' ')
-        self._tokens = [self._tokenize(word) for word in split_sent]
-
-    def was_scanned(self) -> bool:
-        return self._was_scanned
-
-    def get_tokens(self) -> list:
-        return self._tokens
+        tokens = [self._tokenize(word) for word in split_sent]
+        return tokens
