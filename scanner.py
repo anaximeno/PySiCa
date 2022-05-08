@@ -10,7 +10,7 @@ class Token:
         Token.counter += 1
 
     def __str__(self) -> str:
-        return f"<{self.TYPE} [id = {self.id}], {self.word!r}>"
+        return f"<{self.TYPE} tk{self.id}, {self.word!r}>"
 
     def __repr__(self) -> str:
         return self.__str__()
@@ -47,7 +47,6 @@ class Scanner:
             'numbers': (set(string.digits), NumberToken),
             'signals': (set('+-*/'), SignalToken),
             'parentheses': (set('()'), ParenthesesToken)}
-        self._was_scanned: bool = False
         self._tokens: list = None
 
     def _tokenize(self, word: str) -> Token:
