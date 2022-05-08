@@ -1,8 +1,8 @@
-from collections import deque
-from itertools import count
 from pymonad.maybe import Maybe
+from queue import LifoQueue
 import string
 
+EOF: str = '$'
 
 class Nothing(Maybe):
 
@@ -79,37 +79,26 @@ class Just(Maybe):
 class Stack(object):
 
     def __init__(self):
-        self.__top = 0
-        self.__deque = deque()
+        self._stack = LifoQueue()
 
     def __str__(self) -> str:
-        return str(self.__deque)
+        return str(self._stack.queue)
 
-    def push(self, value):
-        self.__top += 1
-        self.__deque.append(value)
+    def push(self, item):
+        self._stack.put(item)
 
     def pop(self):
-        try:
-            self.__top -= 1
-            pop = self.__deque.pop()
-        except IndexError:
-            pop = None
-            self.__top = 0
-        return pop
-
-    @property
-    def top(self):
-        return self.__top
+        item = None
+        if not self._stack.empty():
+            item = self._stack.get()
+        return item
 
 
-
+# TODO: update to the lib queue
 class Queue(object):
 
     def __init__(self, limit: int = None):
-        self.__deque = deque()
-        self.__lenght = 0
-        self.__lim = limit
+        self._stack = Queue()
 
     def __str__(self) -> str:
         return str(self.__deque)
