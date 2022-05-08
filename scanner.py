@@ -47,7 +47,7 @@ class Scanner:
             'identifiers': (set(string.ascii_letters), IdentifierToken),
             'numbers': (set(string.digits), NumberToken),
             'signals': (set('+-*/'), SignalToken),
-            'parentheses': (set('(  )'), ParenthesesToken)}
+            'parentheses': (set('()'), ParenthesesToken)}
         self._was_scanned: bool = False
         self._tokens: list = None
 
