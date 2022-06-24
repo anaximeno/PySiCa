@@ -1,6 +1,6 @@
 ## Python Simple Calculator - PySiCa
 
-<img src="images/pysica_black.png">
+<img src="images/pysica.png">
 
 
 A basic calculator made in python.

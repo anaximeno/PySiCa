@@ -11,7 +11,7 @@ import argparse
 import termcolor
 
 
-__version__ = '2.2.0-beta'
+__version__ = '2.3.0-beta'
 
 
 PRETTY_OUTPUT_FORMAT_0 = f"""
@@ -140,7 +140,7 @@ class PySiCa(object):
 
 
 if __name__ == '__main__':
-    argparser = argparse.ArgumentParser(PySiCa.NAME)
+    argparser = argparse.ArgumentParser("PySiCa")
     argparser.add_argument("--version",
         help="Display the version",
         action='version',
