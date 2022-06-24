@@ -419,25 +419,24 @@ class Automata:
             sent_expr = '0 ' + sent_expr
         elif sent_expr[-1] == Add.SYMBOL:
             sent_expr = sent_expr + ' 0'
-        for symbol in self.OPERATIONS.keys():
-            if symbol in sent_expr:
-                left, *right = sent_expr.split(symbol)
-                if symbol == Sub.SYMBOL:
-                    new_right_sent_expr = Add.SYMBOL.join(right)
-                else:
-                    new_right_sent_expr = symbol.join(right)
-                return self.OPERATIONS[symbol](
-                    left = self.__parse_expression(
-                        left.strip()
-                    ),
-                    right = self.__parse_expression(
-                        new_right_sent_expr.strip(),
-                        parentheses = symbol == Sub.SYMBOL
-                    ),
-                    parentheses = kwargs['parentheses'] if 'parentheses' in kwargs else False
-                )
-        else:
-            return self.__get_expression_object(sentence)
+        used_symbols = set(self.OPERATIONS.keys()).intersection(sent_expr)
+        for symbol in used_symbols:
+            left, *right = sent_expr.split(symbol)
+            if symbol == Sub.SYMBOL:
+                new_right_sent_expr = Add.SYMBOL.join(right)
+            else:
+                new_right_sent_expr = symbol.join(right)
+            return self.OPERATIONS[symbol](
+                left = self.__parse_expression(
+                    left.strip()
+                ),
+                right = self.__parse_expression(
+                    new_right_sent_expr.strip(),
+                    parentheses = symbol == Sub.SYMBOL
+                ),
+                parentheses = kwargs['parentheses'] if 'parentheses' in kwargs else False
+            )
+        return self.__get_expression_object(sentence)
 
     def __get_expression_object(self, word) -> Expression:
         """Return the respective Expression for each type of word."""
