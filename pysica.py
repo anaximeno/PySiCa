@@ -11,7 +11,7 @@ import argparse
 import termcolor
 
 
-__version__ = '2.1.0-beta'
+__version__ = '2.2.0-beta'
 
 
 PRETTY_OUTPUT_FORMAT_0 = f"""
@@ -52,7 +52,6 @@ PRETTY_OUTPUT_FORMAT_3 = """
 
 
 class PySiCa(object):
-    NAME = "PySiCa"
 
     OUTPUT_FORMAT = [
         PRETTY_OUTPUT_FORMAT_0,
@@ -70,7 +69,7 @@ class PySiCa(object):
         self.output_queue = Queue(3)
 
     def __str__(self) -> str:
-        return f'Python Simple Calculator [{self.NAME}] {__version__}'
+        return f'Python Simple Calculator [PySiCa] {__version__}'
 
     def enterpoint(self, message: str = "[Click Enter]"):
         self._out.write(f"{self.NAME}: {message}")
