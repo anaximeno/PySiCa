@@ -24,6 +24,8 @@ PRETTY_OUTPUT_FORMAT_0 = f"""
  [0] => """
 
 PRETTY_OUTPUT_FORMAT_1 = """
+ Write an expression or 'q' to quit.
+
  [1] %s
 
 --------------------------------------
@@ -31,6 +33,8 @@ PRETTY_OUTPUT_FORMAT_1 = """
  [0] => """
 
 PRETTY_OUTPUT_FORMAT_2 = """
+ Write an expression or 'q' to quit.
+
  [2] %s
 
  [1] %s
@@ -40,6 +44,8 @@ PRETTY_OUTPUT_FORMAT_2 = """
  [0] => """
 
 PRETTY_OUTPUT_FORMAT_3 = """
+ Write an expression or 'q' to quit.
+
  [3] %s
 
  [2] %s
