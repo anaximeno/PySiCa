@@ -14,25 +14,25 @@ import termcolor
 __version__ = '2.3.0-beta'
 
 
-PRETTY_OUTPUT_FORMAT_0 = f"""
+VIEW_01 = f"""
  PySiCa {__version__}
- 
+
  Write an expression or 'q' to quit.
 
 --------------------------------------
- 
+
  [0] => """
 
-PRETTY_OUTPUT_FORMAT_1 = """
+VIEW_02 = """
  Write an expression or 'q' to quit.
 
  [1] %s
 
 --------------------------------------
- 
+
  [0] => """
 
-PRETTY_OUTPUT_FORMAT_2 = """
+VIEW_03 = """
  Write an expression or 'q' to quit.
 
  [2] %s
@@ -40,10 +40,10 @@ PRETTY_OUTPUT_FORMAT_2 = """
  [1] %s
 
 --------------------------------------
- 
+
  [0] => """
 
-PRETTY_OUTPUT_FORMAT_3 = """
+VIEW_04 = """
  Write an expression or 'q' to quit.
 
  [3] %s
@@ -53,17 +53,17 @@ PRETTY_OUTPUT_FORMAT_3 = """
  [1] %s
 
 --------------------------------------
- 
+
  [0] => """
 
 
 class PySiCa(object):
 
-    OUTPUT_FORMAT = [
-        PRETTY_OUTPUT_FORMAT_0,
-        PRETTY_OUTPUT_FORMAT_1,
-        PRETTY_OUTPUT_FORMAT_2,
-        PRETTY_OUTPUT_FORMAT_3
+    VIEWS = [
+        VIEW_01,
+        VIEW_02,
+        VIEW_03,
+        VIEW_04
     ]
 
     def __init__(self, debug: bool = False) -> None:
@@ -141,7 +141,7 @@ class PySiCa(object):
         if pretty is True:
             index = self.output_queue.lenght
             elements = tuple(self.output_queue.list())
-            output_format = self.OUTPUT_FORMAT[index] % elements
+            output_format = self.VIEWS[index] % elements
         return input(output_format)
 
 
