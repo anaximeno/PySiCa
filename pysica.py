@@ -11,7 +11,7 @@ import argparse
 import termcolor
 
 
-__version__ = '2.3.0-beta'
+__version__ = '2.3.1-beta'
 
 
 VIEW_01 = f"""
@@ -101,7 +101,7 @@ class PySiCa(object):
         anim_time = 0
         if 'anim_time' in kwargs:
             anim_time = kwargs['anim_time']
-        self.animate(f"\nPySiCa: {message}", anim_time)
+        self.animate(f"\nPySiCa: {message}", anim_time * int(not self._debug_mode))
 
     def run(self, tutorial: bool = False):
         self.talk("Welcome to the [Py]thon [Si]mple [Ca]lculator!", anim_time=0.04)
@@ -142,6 +142,7 @@ class PySiCa(object):
             index = self.output_queue.lenght
             elements = tuple(self.output_queue.list())
             output_format = self.VIEWS[index] % elements
+        sys.stdout.flush()
         return input(output_format)
 
 
