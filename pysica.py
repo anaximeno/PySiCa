@@ -142,12 +142,13 @@ class PySiCa(object):
             index = self.output_queue.lenght
             elements = tuple(self.output_queue.list())
             output_format = self.VIEWS[index] % elements
-        sys.stdout.flush()
+        self._out.flush()
         return input(output_format)
 
 
 if __name__ == '__main__':
     argparser = argparse.ArgumentParser("PySiCa")
+
     argparser.add_argument("--version",
         help="Display the version",
         action='version',
