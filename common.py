@@ -1,6 +1,6 @@
 from pymonad.maybe import Maybe
-from constants import *
 from collections import deque
+from constants import *
 
 
 class Nothing(Maybe):

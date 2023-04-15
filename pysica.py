@@ -1,11 +1,13 @@
 from sys import stdout, stdin
-from backend import Automata
+from automata import Automata
+
 from common import (
     Expression,
     Nothing,
     Rejection,
     Queue,
 )
+
 import os, time
 import argparse
 import termcolor
